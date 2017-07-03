@@ -1,0 +1,39 @@
+syntax = "proto2";
+
+package NicotbConfig;
+
+message Signal {
+	enum NpType { U1 = 1; U8 = 2; U16 = 3; U32 = 4; I8 = 5; I16 = 6; I32 = 7; }
+	required string name = 1;
+	repeated int32 shape = 2;
+	optional NpType np_type = 3 [default = I32];
+}
+
+message SignalGroupDefine {
+	required string name = 1;
+	repeated Signal signals = 2;
+}
+
+message SignalGroup {
+	required string prefix = 1;
+	required string grp_def_name = 2;
+}
+
+message Bus {
+	required string name = 1;
+	optional string hier = 2;
+	repeated SignalGroup sig_grps = 3;
+	repeated Signal sigs = 4;
+}
+
+message Event {
+	required string name = 1;
+	optional string ev_hier = 2;
+	required string ev_name = 3;
+}
+
+message NicotbConfig {
+	repeated SignalGroupDefine siggrp_defs = 1;
+	repeated Bus buses = 2;
+	repeated Event events = 3;
+}

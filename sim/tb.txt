@@ -1,0 +1,10 @@
+events {
+	name: "clk"
+	ev_hier: "u_cs"
+	ev_name: "clk"
+}
+events {
+	name: "rst_out"
+	ev_hier: "u_cs"
+	ev_name: "rst_out"
+}
