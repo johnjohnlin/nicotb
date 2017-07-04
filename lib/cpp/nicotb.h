@@ -11,13 +11,16 @@
 
 namespace Nicotb {
 
-typedef std::unordered_map<std::string, vpiHandle> EventEntry;
-typedef std::unordered_map<std::string, std::tuple<
-	std::string,            // signal name
-	NPY_TYPES,              // numpy type
-	std::vector<int>,       // signal dimension
-	std::vector<vpiHandle>  // signal handle
->> SignalEntry;
+typedef std::unordered_map<std::string, size_t> EventEntry;
+struct SignalEntry {
+	NPY_TYPES t;
+	std::vector<int> d;
+	std::vector<vpiHandle> h;
+};
+typedef std::unordered_map<std::string, std::pair<
+	size_t,
+	std::vector<SignalEntry>
+>> BusEntry;
 
 void InitPython(const EventEntry &e, const SignalEntry &s);
 void TriggerEvent(PyObject *events, int i);

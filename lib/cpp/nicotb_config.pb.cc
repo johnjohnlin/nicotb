@@ -70,7 +70,7 @@ void protobuf_AssignDesc_nicotb_5fconfig_2eproto() {
   SignalGroupDefine_descriptor_ = file->message_type(1);
   static const int SignalGroupDefine_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SignalGroupDefine, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SignalGroupDefine, signals_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SignalGroupDefine, sigs_),
   };
   SignalGroupDefine_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -205,18 +205,18 @@ void protobuf_AddDesc_nicotb_5fconfig_2eproto() {
     "Signal\022\014\n\004name\030\001 \002(\t\022\r\n\005shape\030\002 \003(\005\0221\n\007n"
     "p_type\030\003 \001(\0162\033.NicotbConfig.Signal.NpTyp"
     "e:\003I32\"D\n\006NpType\022\006\n\002U1\020\001\022\006\n\002U8\020\002\022\007\n\003U16\020"
-    "\003\022\007\n\003U32\020\004\022\006\n\002I8\020\005\022\007\n\003I16\020\006\022\007\n\003I32\020\007\"H\n\021"
-    "SignalGroupDefine\022\014\n\004name\030\001 \002(\t\022%\n\007signa"
-    "ls\030\002 \003(\0132\024.NicotbConfig.Signal\"3\n\013Signal"
-    "Group\022\016\n\006prefix\030\001 \002(\t\022\024\n\014grp_def_name\030\002 "
-    "\002(\t\"r\n\003Bus\022\014\n\004name\030\001 \002(\t\022\014\n\004hier\030\002 \001(\t\022+"
-    "\n\010sig_grps\030\003 \003(\0132\031.NicotbConfig.SignalGr"
-    "oup\022\"\n\004sigs\030\004 \003(\0132\024.NicotbConfig.Signal\""
-    "7\n\005Event\022\014\n\004name\030\001 \002(\t\022\017\n\007ev_hier\030\002 \001(\t\022"
-    "\017\n\007ev_name\030\003 \002(\t\"\213\001\n\014NicotbConfig\0224\n\013sig"
-    "grp_defs\030\001 \003(\0132\037.NicotbConfig.SignalGrou"
-    "pDefine\022 \n\005buses\030\002 \003(\0132\021.NicotbConfig.Bu"
-    "s\022#\n\006events\030\003 \003(\0132\023.NicotbConfig.Event", 638);
+    "\003\022\007\n\003U32\020\004\022\006\n\002I8\020\005\022\007\n\003I16\020\006\022\007\n\003I32\020\007\"E\n\021"
+    "SignalGroupDefine\022\014\n\004name\030\001 \002(\t\022\"\n\004sigs\030"
+    "\002 \003(\0132\024.NicotbConfig.Signal\"3\n\013SignalGro"
+    "up\022\016\n\006prefix\030\001 \001(\t\022\024\n\014grp_def_name\030\002 \002(\t"
+    "\"r\n\003Bus\022\014\n\004name\030\001 \002(\t\022\014\n\004hier\030\002 \001(\t\022+\n\010s"
+    "ig_grps\030\003 \003(\0132\031.NicotbConfig.SignalGroup"
+    "\022\"\n\004sigs\030\004 \003(\0132\024.NicotbConfig.Signal\"7\n\005"
+    "Event\022\014\n\004name\030\001 \002(\t\022\017\n\007ev_hier\030\002 \001(\t\022\017\n\007"
+    "ev_name\030\003 \002(\t\"\213\001\n\014NicotbConfig\0224\n\013siggrp"
+    "_defs\030\001 \003(\0132\037.NicotbConfig.SignalGroupDe"
+    "fine\022 \n\005buses\030\002 \003(\0132\021.NicotbConfig.Bus\022#"
+    "\n\006events\030\003 \003(\0132\023.NicotbConfig.Event", 635);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "nicotb_config.proto", &protobuf_RegisterTypes);
   Signal::default_instance_ = new Signal();
@@ -596,7 +596,7 @@ void Signal::Swap(Signal* other) {
 
 #ifndef _MSC_VER
 const int SignalGroupDefine::kNameFieldNumber;
-const int SignalGroupDefine::kSignalsFieldNumber;
+const int SignalGroupDefine::kSigsFieldNumber;
 #endif  // !_MSC_VER
 
 SignalGroupDefine::SignalGroupDefine()
@@ -660,7 +660,7 @@ void SignalGroupDefine::Clear() {
       }
     }
   }
-  signals_.Clear();
+  sigs_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -683,21 +683,21 @@ bool SignalGroupDefine::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_signals;
+        if (input->ExpectTag(18)) goto parse_sigs;
         break;
       }
 
-      // repeated .NicotbConfig.Signal signals = 2;
+      // repeated .NicotbConfig.Signal sigs = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_signals:
+         parse_sigs:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_signals()));
+                input, add_sigs()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_signals;
+        if (input->ExpectTag(18)) goto parse_sigs;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -729,10 +729,10 @@ void SignalGroupDefine::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // repeated .NicotbConfig.Signal signals = 2;
-  for (int i = 0; i < this->signals_size(); i++) {
+  // repeated .NicotbConfig.Signal sigs = 2;
+  for (int i = 0; i < this->sigs_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->signals(i), output);
+      2, this->sigs(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -753,11 +753,11 @@ void SignalGroupDefine::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // repeated .NicotbConfig.Signal signals = 2;
-  for (int i = 0; i < this->signals_size(); i++) {
+  // repeated .NicotbConfig.Signal sigs = 2;
+  for (int i = 0; i < this->sigs_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        2, this->signals(i), target);
+        2, this->sigs(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -779,12 +779,12 @@ int SignalGroupDefine::ByteSize() const {
     }
 
   }
-  // repeated .NicotbConfig.Signal signals = 2;
-  total_size += 1 * this->signals_size();
-  for (int i = 0; i < this->signals_size(); i++) {
+  // repeated .NicotbConfig.Signal sigs = 2;
+  total_size += 1 * this->sigs_size();
+  for (int i = 0; i < this->sigs_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->signals(i));
+        this->sigs(i));
   }
 
   if (!unknown_fields().empty()) {
@@ -812,7 +812,7 @@ void SignalGroupDefine::MergeFrom(const ::google::protobuf::Message& from) {
 
 void SignalGroupDefine::MergeFrom(const SignalGroupDefine& from) {
   GOOGLE_CHECK_NE(&from, this);
-  signals_.MergeFrom(from.signals_);
+  sigs_.MergeFrom(from.sigs_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_name()) {
       set_name(from.name());
@@ -836,8 +836,8 @@ void SignalGroupDefine::CopyFrom(const SignalGroupDefine& from) {
 bool SignalGroupDefine::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
-  for (int i = 0; i < signals_size(); i++) {
-    if (!this->signals(i).IsInitialized()) return false;
+  for (int i = 0; i < sigs_size(); i++) {
+    if (!this->sigs(i).IsInitialized()) return false;
   }
   return true;
 }
@@ -845,7 +845,7 @@ bool SignalGroupDefine::IsInitialized() const {
 void SignalGroupDefine::Swap(SignalGroupDefine* other) {
   if (other != this) {
     std::swap(name_, other->name_);
-    signals_.Swap(&other->signals_);
+    sigs_.Swap(&other->sigs_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -948,7 +948,7 @@ bool SignalGroup::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string prefix = 1;
+      // optional string prefix = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -999,7 +999,7 @@ bool SignalGroup::MergePartialFromCodedStream(
 
 void SignalGroup::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required string prefix = 1;
+  // optional string prefix = 1;
   if (has_prefix()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->prefix().data(), this->prefix().length(),
@@ -1025,7 +1025,7 @@ void SignalGroup::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* SignalGroup::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required string prefix = 1;
+  // optional string prefix = 1;
   if (has_prefix()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->prefix().data(), this->prefix().length(),
@@ -1056,7 +1056,7 @@ int SignalGroup::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string prefix = 1;
+    // optional string prefix = 1;
     if (has_prefix()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1120,7 +1120,7 @@ void SignalGroup::CopyFrom(const SignalGroup& from) {
 }
 
 bool SignalGroup::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
+  if ((_has_bits_[0] & 0x00000002) != 0x00000002) return false;
 
   return true;
 }

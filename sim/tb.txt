@@ -1,3 +1,24 @@
+siggrp_defs {
+	name: "a"
+	sigs {
+		name: "a"
+	}
+}
+buses {
+	name: "a"
+	sig_grps {
+		grp_def_name: "a"
+	}
+}
+buses {
+	name: "b"
+	sigs {
+		name: "b"
+		shape: 3
+		shape: 2
+		shape: 4
+	}
+}
 events {
 	name: "clk"
 	ev_hier: "u_cs"

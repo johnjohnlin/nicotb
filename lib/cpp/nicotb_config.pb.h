@@ -272,17 +272,17 @@ class SignalGroupDefine : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // repeated .NicotbConfig.Signal signals = 2;
-  inline int signals_size() const;
-  inline void clear_signals();
-  static const int kSignalsFieldNumber = 2;
-  inline const ::NicotbConfig::Signal& signals(int index) const;
-  inline ::NicotbConfig::Signal* mutable_signals(int index);
-  inline ::NicotbConfig::Signal* add_signals();
+  // repeated .NicotbConfig.Signal sigs = 2;
+  inline int sigs_size() const;
+  inline void clear_sigs();
+  static const int kSigsFieldNumber = 2;
+  inline const ::NicotbConfig::Signal& sigs(int index) const;
+  inline ::NicotbConfig::Signal* mutable_sigs(int index);
+  inline ::NicotbConfig::Signal* add_sigs();
   inline const ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal >&
-      signals() const;
+      sigs() const;
   inline ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal >*
-      mutable_signals();
+      mutable_sigs();
 
   // @@protoc_insertion_point(class_scope:NicotbConfig.SignalGroupDefine)
  private:
@@ -292,7 +292,7 @@ class SignalGroupDefine : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* name_;
-  ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal > signals_;
+  ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal > sigs_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -360,7 +360,7 @@ class SignalGroup : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required string prefix = 1;
+  // optional string prefix = 1;
   inline bool has_prefix() const;
   inline void clear_prefix();
   static const int kPrefixFieldNumber = 1;
@@ -961,36 +961,36 @@ inline void SignalGroupDefine::set_allocated_name(::std::string* name) {
   }
 }
 
-// repeated .NicotbConfig.Signal signals = 2;
-inline int SignalGroupDefine::signals_size() const {
-  return signals_.size();
+// repeated .NicotbConfig.Signal sigs = 2;
+inline int SignalGroupDefine::sigs_size() const {
+  return sigs_.size();
 }
-inline void SignalGroupDefine::clear_signals() {
-  signals_.Clear();
+inline void SignalGroupDefine::clear_sigs() {
+  sigs_.Clear();
 }
-inline const ::NicotbConfig::Signal& SignalGroupDefine::signals(int index) const {
-  return signals_.Get(index);
+inline const ::NicotbConfig::Signal& SignalGroupDefine::sigs(int index) const {
+  return sigs_.Get(index);
 }
-inline ::NicotbConfig::Signal* SignalGroupDefine::mutable_signals(int index) {
-  return signals_.Mutable(index);
+inline ::NicotbConfig::Signal* SignalGroupDefine::mutable_sigs(int index) {
+  return sigs_.Mutable(index);
 }
-inline ::NicotbConfig::Signal* SignalGroupDefine::add_signals() {
-  return signals_.Add();
+inline ::NicotbConfig::Signal* SignalGroupDefine::add_sigs() {
+  return sigs_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal >&
-SignalGroupDefine::signals() const {
-  return signals_;
+SignalGroupDefine::sigs() const {
+  return sigs_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::NicotbConfig::Signal >*
-SignalGroupDefine::mutable_signals() {
-  return &signals_;
+SignalGroupDefine::mutable_sigs() {
+  return &sigs_;
 }
 
 // -------------------------------------------------------------------
 
 // SignalGroup
 
-// required string prefix = 1;
+// optional string prefix = 1;
 inline bool SignalGroup::has_prefix() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }

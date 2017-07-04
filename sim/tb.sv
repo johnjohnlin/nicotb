@@ -4,7 +4,7 @@ module tb;
 
 logic clk, rst;
 logic [3:0] a;
-logic [10:0] b [1];
+logic [10:0] b [3][2][4];
 ClockedSignal u_cs(clk, rst);
 
 initial begin

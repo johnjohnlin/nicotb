@@ -11,11 +11,11 @@ message Signal {
 
 message SignalGroupDefine {
 	required string name = 1;
-	repeated Signal signals = 2;
+	repeated Signal sigs = 2;
 }
 
 message SignalGroup {
-	required string prefix = 1;
+	optional string prefix = 1;
 	required string grp_def_name = 2;
 }
 
