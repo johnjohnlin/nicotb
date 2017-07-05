@@ -1,8 +1,6 @@
 #pragma once
-#include "vpi_user.h"
-// TODO: check whether this header includes NPY_TYPES in all versions?
 #include <glog/logging.h>
-#include <numpy/ndarraytypes.h>
+#include <numpy/arrayobject.h>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -15,17 +13,22 @@ typedef std::unordered_map<std::string, size_t> EventEntry;
 struct SignalEntry {
 	NPY_TYPES t;
 	std::vector<int> d;
-	std::vector<vpiHandle> h;
 };
 typedef std::unordered_map<std::string, std::pair<
 	size_t,
 	std::vector<SignalEntry>
 >> BusEntry;
 
-void InitPython(const EventEntry &e, const SignalEntry &s);
-void TriggerEvent(PyObject *events, int i);
+namespace Python {
 
-}
+void Init(const EventEntry &e, const BusEntry &s);
+void TriggerEvent(size_t i);
+// VPI must implement these functions
+void ReadSignal(const size_t i, PyObject *npa_list);
+void WriteSignal(const size_t i, PyObject *npa_list);
+
+} // namespace Python
+} // namespace Nicotb
 
 static inline std::unique_ptr<char[]> ToCharUqPtr(const std::string &s)
 {
@@ -40,12 +43,4 @@ static inline const char *GetEnv(const char *name)
 	const char *value = getenv(name);
 	LOG_IF(FATAL, value == nullptr) << "Environment variable" << name << " not set";
 	return value;
-}
-
-static inline vpiHandle VpiHandleByName(char *hier, vpiHandle h)
-{
-	vpiHandle ret = vpi_handle_by_name(hier, h);
-	LOG_IF(FATAL, not ret) << "Cannot find" << hier;
-	LOG(INFO) << "Found vpiHandle " << ret << " from " << hier << " of vpiHandle " << h;
-	return ret;
 }

@@ -11,7 +11,12 @@ buses {
 	}
 }
 buses {
-	name: "b"
+	name: "cb"
+	sigs {
+		name: "c"
+		shape: 2
+		shape: 4
+	}
 	sigs {
 		name: "b"
 		shape: 3
