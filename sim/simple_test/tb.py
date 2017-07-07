@@ -15,7 +15,13 @@ def clk():
 	yield "rst_out"
 	while True:
 		yield "clk"
-		print("clk")
+		if GetBus("a")[1][0][0]:
+			GetBus("cb")[0][0][1,1] = -1
+			GetBus("cb")[1][0][1,1] = -1
+		else:
+			GetBus("cb")[0][0][1,1] = GetBus("a")[0][0][0]
+			GetBus("cb")[1][0][1,1] = 0
+		WriteBus(ToBusIdx("cb"), GetBus("cb")[0], GetBus("cb")[1])
 
 RegisterCoroutines([
 	clk(),

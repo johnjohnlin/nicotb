@@ -17,12 +17,26 @@ static PyObject *p_main_loop;
 
 static PyObject* ReadBus(PyObject *dummy, PyObject *args)
 {
+	unsigned i;
+	PyObject *v_list;
+	PyObject *x_list;
+	if (!PyArg_ParseTuple(args, "IOO", &i, &v_list, &x_list)) {
+		return nullptr;
+	}
+	ReadBusExt(i, v_list, x_list);
 	Py_INCREF(Py_None);
 	return Py_None;
 }
 
 static PyObject* WriteBus(PyObject *dummy, PyObject *args)
 {
+	unsigned i;
+	PyObject *v_list;
+	PyObject *x_list;
+	if (!PyArg_ParseTuple(args, "IOO", &i, &v_list, &x_list)) {
+		return nullptr;
+	}
+	WriteBusExt(i, v_list, x_list);
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -60,6 +74,9 @@ static void InitBus(PyObject *&p_list, PyObject *&p_dict)
 		PyDict_SetItemString(p_dict, name.c_str(), p_idx);
 		for (size_t sidx = 0; sidx < sig.size(); ++sidx) {
 			vector<npy_intp> dim_intp(sig[sidx].d.begin(), sig[sidx].d.end());
+			if (dim_intp.empty()) {
+				dim_intp.push_back(1);
+			}
 			PyTuple_SET_ITEM(p_v_tup, sidx, PyArray_ZEROS(dim_intp.size(), dim_intp.data(), sig[sidx].t, 0));
 			PyTuple_SET_ITEM(p_x_tup, sidx, PyArray_ZEROS(dim_intp.size(), dim_intp.data(), sig[sidx].t, 0));
 		}
@@ -96,9 +113,7 @@ static PyObject* InitBridgeModule()
 static void ImportTest()
 {
 	PyObject *p_module_name = PyUnicode_FromString(GetEnv("TEST"));
-	PyErr_Print();
 	PyObject *p_module = PyImport_Import(p_module_name);
-	PyErr_Print();
 	p_set_event = PyObject_GetAttrString(p_module, "SetEvent");
 	p_main_loop = PyObject_GetAttrString(p_module, "MainLoop");
 	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr) <<
@@ -111,6 +126,7 @@ void TriggerEvent(size_t i)
 {
 	Py_XDECREF(PyObject_CallFunction(p_set_event, "n", Py_ssize_t(i)));
 	Py_XDECREF(PyObject_CallFunction(p_main_loop, ""));
+	PyErr_Print();
 }
 
 void Init(const EventEntry &_e, const BusEntry &_b)
@@ -120,8 +136,8 @@ void Init(const EventEntry &_e, const BusEntry &_b)
 	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
 	Py_Initialize();
 	_import_array();
-	PyErr_Print();
 	ImportTest();
+	PyErr_Print();
 }
 
 } // namespace Python

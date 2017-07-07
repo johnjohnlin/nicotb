@@ -12,8 +12,76 @@ static vector<vector<vpiHandle>> registered_handles;
 
 namespace Python {
 
-void ReadSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list) {}
-void WriteSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list) {}
+#define ITER_ROUTINE_BEGIN(ITER_FLAG)\
+	vector<vpiHandle> &handles = registered_handles[i];\
+	CHECK_EQ(PyTuple_Size(value_list), PyTuple_Size(xxx_list)) << "Tuple length mismatch";\
+	PyObject *p_it_v = CHECK_NOTNULL(PyObject_GetIter(value_list));\
+	PyObject *p_it_x = CHECK_NOTNULL(PyObject_GetIter(xxx_list));\
+	auto it = handles.begin();\
+	for (\
+		PyObject *_p_v = PyIter_Next(p_it_v), *_p_x = PyIter_Next(p_it_x);\
+		_p_v;\
+		_p_v = PyIter_Next(p_it_v), _p_x = PyIter_Next(p_it_x)\
+	) {\
+		PyArrayObject *p_v = (PyArrayObject*)_p_v, *p_x = (PyArrayObject*)_p_x;\
+		CHECK(PyArray_CheckExact(p_v) and PyArray_CheckExact(p_x)) << "Inputs are not numpy array";\
+		CHECK_EQ(PyArray_SIZE(p_v), PyArray_SIZE(p_x)) << "Array size mismatch";\
+		CHECK_LE(PyArray_SIZE(p_v), handles.end()-it) << "No enough Verilog signal left";\
+		if (PyArray_SIZE(p_v) == 0) {\
+			LOG(ERROR) << "Ignore zero-sized array";\
+			continue;\
+		}\
+		PyArrayObject *op[2]{p_v, p_x};\
+		npy_uint32 op_flags[2]{(ITER_FLAG), (ITER_FLAG)};\
+		NpyIter *iter = CHECK_NOTNULL(NpyIter_MultiNew(\
+			2, op, NPY_ITER_EXTERNAL_LOOP,\
+			NPY_KEEPORDER, NPY_NO_CASTING, op_flags, nullptr\
+		));\
+		NpyIter_IterNextFunc *iternext = NpyIter_GetIterNext(iter, nullptr);\
+		npy_intp innerstride0 = NpyIter_GetInnerStrideArray(iter)[0],\
+		         innerstride1 = NpyIter_GetInnerStrideArray(iter)[1],\
+		         itemsize0 = NpyIter_GetDescrArray(iter)[0]->elsize,\
+		         itemsize1 = NpyIter_GetDescrArray(iter)[0]->elsize,\
+		         *innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);\
+		char **dataptrarray = NpyIter_GetDataPtrArray(iter);\
+		CHECK_EQ(itemsize0, itemsize1) << "Array dtype mismatch";\
+		do {\
+			npy_intp size = *innersizeptr;\
+			char *v_dat = dataptrarray[0], *x_dat = dataptrarray[1];\
+			for(npy_intp i = 0; i < size; i++, v_dat += innerstride0, x_dat += innerstride1) {\
+				s_vpi_value v;\
+				v.format = vpiVectorVal;
+
+#define ITER_ROUTINE_END\
+				++it;\
+			}\
+		} while (iternext(iter));\
+		Py_DECREF(_p_v);\
+		Py_DECREF(_p_x);\
+	}\
+	CHECK(it == handles.end()) << "Tuple length mismatch";\
+	Py_DECREF(p_it_v);\
+	Py_DECREF(p_it_x);
+
+void ReadBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
+{
+	ITER_ROUTINE_BEGIN(NPY_ITER_WRITEONLY)
+		vpi_get_value(*it, &v);
+		memcpy(v_dat, &v.value.vector->aval, itemsize0);
+		memcpy(x_dat, &v.value.vector->bval, itemsize0);
+	ITER_ROUTINE_END
+}
+
+void WriteBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
+{
+	ITER_ROUTINE_BEGIN(NPY_ITER_READONLY)
+		s_vpi_vecval vecval;
+		memcpy(&vecval.aval, v_dat, itemsize0);
+		memcpy(&vecval.bval, x_dat, itemsize0);
+		v.value.vector = &vecval;
+		vpi_put_value(*it, &v, nullptr, vpiNoDelay);
+	ITER_ROUTINE_END
+}
 
 } // namespace Python
 
@@ -152,8 +220,8 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 			const unsigned writev = target_entry.first;
 			v.format = vpiIntVal;
 			v.value.integer = writev;
-			vpi_put_value(h, &v, NULL, vpiNoDelay);
-			LOG(INFO) << "Set signal " << name << " to " << writev;
+			vpi_put_value(h, &v, nullptr, vpiNoDelay);
+			LOG(INFO) << "Set signal " << hier << " to " << writev;
 		}
 		for (const string &bidx: ev_bound_buses) {
 			auto it = bent.find(bidx);
@@ -170,6 +238,7 @@ static PLI_INT32 Init(PLI_BYTE8 *args)
 	BusEntry b;
 	ReadConfig(e, b);
 	Python::Init(e, b);
+	_import_array(); // this is required for each compile unit
 	return 0;
 }
 
@@ -177,7 +246,7 @@ static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 {
 	vpiHandle systfref, args_iter, argh;
 	struct t_vpi_value argval;
-	systfref = vpi_handle(vpiSysTfCall, NULL);
+	systfref = vpi_handle(vpiSysTfCall, nullptr);
 	args_iter = vpi_iterate(vpiArgument, systfref);
 	argh = vpi_scan(args_iter);
 	argval.format = vpiIntVal;

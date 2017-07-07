@@ -28,6 +28,7 @@ buses {
 events {
 	name: "clk"
 	hier: "u_cs.clk"
+	bound_buses: "a"
 }
 events {
 	name: "rst_out"
