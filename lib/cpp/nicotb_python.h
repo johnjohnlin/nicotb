@@ -9,23 +9,26 @@
 
 namespace Nicotb {
 
-typedef std::unordered_map<std::string, size_t> EventEntry;
+typedef std::unordered_map<std::string, std::pair<
+	size_t,        // index
+	std::vector<size_t> // bus index read
+>> EventEntry;
 struct SignalEntry {
 	NPY_TYPES t;
 	std::vector<int> d;
 };
 typedef std::unordered_map<std::string, std::pair<
-	size_t,
+	size_t,                  // index
 	std::vector<SignalEntry>
 >> BusEntry;
 
 namespace Python {
 
-void Init(const EventEntry &e, const BusEntry &s);
+void Init(const EventEntry &e, const BusEntry &b);
 void TriggerEvent(size_t i);
 // VPI must implement these functions
-void ReadSignal(const size_t i, PyObject *npa_list);
-void WriteSignal(const size_t i, PyObject *npa_list);
+void ReadSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list);
+void WriteSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list);
 
 } // namespace Python
 } // namespace Nicotb

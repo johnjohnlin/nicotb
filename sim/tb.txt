@@ -2,6 +2,7 @@ siggrp_defs {
 	name: "a"
 	sigs {
 		name: "a"
+		np_type: U16
 	}
 }
 buses {
@@ -26,11 +27,9 @@ buses {
 }
 events {
 	name: "clk"
-	ev_hier: "u_cs"
-	ev_name: "clk"
+	hier: "u_cs.clk"
 }
 events {
 	name: "rst_out"
-	ev_hier: "u_cs"
-	ev_name: "rst_out"
+	hier: "u_cs.rst_out"
 }

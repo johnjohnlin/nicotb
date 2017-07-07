@@ -1,4 +1,4 @@
-CFLAGS=-fPIC -g -O2 -fwrapv -c --std=c++11\
+CFLAGS=-fPIC -g -fwrapv -c --std=c++11\
        -I/usr/local/include/python3.6m/\
        -DNDEBUG -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 LDFLAGS=-lpython3.6m -lm -lpthread -ldl -lutil -lprotobuf\

@@ -28,8 +28,8 @@ message Bus {
 
 message Event {
 	required string name = 1;
-	optional string ev_hier = 2;
-	required string ev_name = 3;
+	optional string hier = 2;
+	repeated string bound_buses = 3;
 }
 
 message NicotbConfig {

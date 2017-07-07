@@ -9,11 +9,16 @@ logic [10:0] b [3][2][4];
 logic [10:0] c [2][4];
 ClockedSignal u_cs(clk, rst);
 
+always #1 clk = ~clk;
 initial begin
+	$fsdbDumpfile("tb.fsdb");
+	$fsdbDumpvars(0, tb);
 	clk = 0;
 	rst = 1;
-	$NicotbInit();
-	#10 $finish;
+	#1 $NicotbInit();
+	#10 rst = 0;
+	#10 rst = 1;
+	#300 $finish;
 end
 
 endmodule

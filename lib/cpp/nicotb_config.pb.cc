@@ -120,8 +120,8 @@ void protobuf_AssignDesc_nicotb_5fconfig_2eproto() {
   Event_descriptor_ = file->message_type(4);
   static const int Event_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, ev_hier_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, ev_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, hier_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, bound_buses_),
   };
   Event_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -211,12 +211,12 @@ void protobuf_AddDesc_nicotb_5fconfig_2eproto() {
     "up\022\016\n\006prefix\030\001 \001(\t\022\024\n\014grp_def_name\030\002 \002(\t"
     "\"r\n\003Bus\022\014\n\004name\030\001 \002(\t\022\014\n\004hier\030\002 \001(\t\022+\n\010s"
     "ig_grps\030\003 \003(\0132\031.NicotbConfig.SignalGroup"
-    "\022\"\n\004sigs\030\004 \003(\0132\024.NicotbConfig.Signal\"7\n\005"
-    "Event\022\014\n\004name\030\001 \002(\t\022\017\n\007ev_hier\030\002 \001(\t\022\017\n\007"
-    "ev_name\030\003 \002(\t\"\213\001\n\014NicotbConfig\0224\n\013siggrp"
-    "_defs\030\001 \003(\0132\037.NicotbConfig.SignalGroupDe"
-    "fine\022 \n\005buses\030\002 \003(\0132\021.NicotbConfig.Bus\022#"
-    "\n\006events\030\003 \003(\0132\023.NicotbConfig.Event", 635);
+    "\022\"\n\004sigs\030\004 \003(\0132\024.NicotbConfig.Signal\"8\n\005"
+    "Event\022\014\n\004name\030\001 \002(\t\022\014\n\004hier\030\002 \001(\t\022\023\n\013bou"
+    "nd_buses\030\003 \003(\t\"\213\001\n\014NicotbConfig\0224\n\013siggr"
+    "p_defs\030\001 \003(\0132\037.NicotbConfig.SignalGroupD"
+    "efine\022 \n\005buses\030\002 \003(\0132\021.NicotbConfig.Bus\022"
+    "#\n\006events\030\003 \003(\0132\023.NicotbConfig.Event", 636);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "nicotb_config.proto", &protobuf_RegisterTypes);
   Signal::default_instance_ = new Signal();
@@ -1517,8 +1517,8 @@ void Bus::Swap(Bus* other) {
 
 #ifndef _MSC_VER
 const int Event::kNameFieldNumber;
-const int Event::kEvHierFieldNumber;
-const int Event::kEvNameFieldNumber;
+const int Event::kHierFieldNumber;
+const int Event::kBoundBusesFieldNumber;
 #endif  // !_MSC_VER
 
 Event::Event()
@@ -1538,8 +1538,7 @@ Event::Event(const Event& from)
 void Event::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  ev_hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  ev_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1551,11 +1550,8 @@ void Event::SharedDtor() {
   if (name_ != &::google::protobuf::internal::kEmptyString) {
     delete name_;
   }
-  if (ev_hier_ != &::google::protobuf::internal::kEmptyString) {
-    delete ev_hier_;
-  }
-  if (ev_name_ != &::google::protobuf::internal::kEmptyString) {
-    delete ev_name_;
+  if (hier_ != &::google::protobuf::internal::kEmptyString) {
+    delete hier_;
   }
   if (this != default_instance_) {
   }
@@ -1589,17 +1585,13 @@ void Event::Clear() {
         name_->clear();
       }
     }
-    if (has_ev_hier()) {
-      if (ev_hier_ != &::google::protobuf::internal::kEmptyString) {
-        ev_hier_->clear();
-      }
-    }
-    if (has_ev_name()) {
-      if (ev_name_ != &::google::protobuf::internal::kEmptyString) {
-        ev_name_->clear();
+    if (has_hier()) {
+      if (hier_ != &::google::protobuf::internal::kEmptyString) {
+        hier_->clear();
       }
     }
   }
+  bound_buses_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -1622,40 +1614,42 @@ bool Event::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_ev_hier;
+        if (input->ExpectTag(18)) goto parse_hier;
         break;
       }
 
-      // optional string ev_hier = 2;
+      // optional string hier = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_ev_hier:
+         parse_hier:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_ev_hier()));
+                input, this->mutable_hier()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->ev_hier().data(), this->ev_hier().length(),
+            this->hier().data(), this->hier().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_ev_name;
+        if (input->ExpectTag(26)) goto parse_bound_buses;
         break;
       }
 
-      // required string ev_name = 3;
+      // repeated string bound_buses = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_ev_name:
+         parse_bound_buses:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_ev_name()));
+                input, this->add_bound_buses()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->ev_name().data(), this->ev_name().length(),
+            this->bound_buses(this->bound_buses_size() - 1).data(),
+            this->bound_buses(this->bound_buses_size() - 1).length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(26)) goto parse_bound_buses;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1687,22 +1681,22 @@ void Event::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // optional string ev_hier = 2;
-  if (has_ev_hier()) {
+  // optional string hier = 2;
+  if (has_hier()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->ev_hier().data(), this->ev_hier().length(),
+      this->hier().data(), this->hier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->ev_hier(), output);
+      2, this->hier(), output);
   }
 
-  // required string ev_name = 3;
-  if (has_ev_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->ev_name().data(), this->ev_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
+  // repeated string bound_buses = 3;
+  for (int i = 0; i < this->bound_buses_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->bound_buses(i).data(), this->bound_buses(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      3, this->ev_name(), output);
+      3, this->bound_buses(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -1723,24 +1717,23 @@ void Event::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // optional string ev_hier = 2;
-  if (has_ev_hier()) {
+  // optional string hier = 2;
+  if (has_hier()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->ev_hier().data(), this->ev_hier().length(),
+      this->hier().data(), this->hier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->ev_hier(), target);
+        2, this->hier(), target);
   }
 
-  // required string ev_name = 3;
-  if (has_ev_name()) {
+  // repeated string bound_buses = 3;
+  for (int i = 0; i < this->bound_buses_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->ev_name().data(), this->ev_name().length(),
+      this->bound_buses(i).data(), this->bound_buses(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->ev_name(), target);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(3, this->bound_buses(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1761,21 +1754,21 @@ int Event::ByteSize() const {
           this->name());
     }
 
-    // optional string ev_hier = 2;
-    if (has_ev_hier()) {
+    // optional string hier = 2;
+    if (has_hier()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->ev_hier());
-    }
-
-    // required string ev_name = 3;
-    if (has_ev_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->ev_name());
+          this->hier());
     }
 
   }
+  // repeated string bound_buses = 3;
+  total_size += 1 * this->bound_buses_size();
+  for (int i = 0; i < this->bound_buses_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->bound_buses(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -1801,15 +1794,13 @@ void Event::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Event::MergeFrom(const Event& from) {
   GOOGLE_CHECK_NE(&from, this);
+  bound_buses_.MergeFrom(from.bound_buses_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_name()) {
       set_name(from.name());
     }
-    if (from.has_ev_hier()) {
-      set_ev_hier(from.ev_hier());
-    }
-    if (from.has_ev_name()) {
-      set_ev_name(from.ev_name());
+    if (from.has_hier()) {
+      set_hier(from.hier());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1828,7 +1819,7 @@ void Event::CopyFrom(const Event& from) {
 }
 
 bool Event::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000005) != 0x00000005) return false;
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
   return true;
 }
@@ -1836,8 +1827,8 @@ bool Event::IsInitialized() const {
 void Event::Swap(Event* other) {
   if (other != this) {
     std::swap(name_, other->name_);
-    std::swap(ev_hier_, other->ev_hier_);
-    std::swap(ev_name_, other->ev_name_);
+    std::swap(hier_, other->hier_);
+    bound_buses_.Swap(&other->bound_buses_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -12,8 +12,8 @@ static vector<vector<vpiHandle>> registered_handles;
 
 namespace Python {
 
-void ReadSignal(const size_t i, PyObject *npa_list) {}
-void WriteSignal(const size_t i, PyObject *npa_list) {}
+void ReadSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list) {}
+void WriteSignalExt(const size_t i, PyObject *value_list, PyObject *xxx_list) {}
 
 } // namespace Python
 
@@ -73,29 +73,7 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 	ifs.close();
 
 	// get vpi
-	// assign signals
 	const string topm = string(GetEnv("TOPMODULE")) + '.';
-	for (auto &&e: config.events()) {
-		const string &name = e.name();
-		const string &ev_hier = string(topm) + e.ev_hier();
-		const string &ev_name = e.ev_name();
-		auto ev_hier_cs = ToCharUqPtr(ev_hier);
-		auto ev_name_cs = ToCharUqPtr(ev_name);
-		LOG(INFO) << "Name: " << name << ", event = " << ev_hier << '.' << ev_name;
-		vpiHandle h = HandleByName(ev_hier_cs.get(), nullptr),
-		          s = HandleByName(ev_name_cs.get(), h);
-		const auto ins_result = eent.emplace(name, eent.size());
-		LOG_IF(ERROR, not ins_result.second) << "Signal " << name << " is already inserted and thus ignored.";
-		if (ins_result.second) {
-			s_vpi_value v;
-			const unsigned writev = ins_result.first->second;
-			v.format = vpiIntVal;
-			v.value.integer = writev;
-			vpi_put_value(s, &v, NULL, vpiNoDelay);
-			LOG(INFO) << "Set signal " << name << " to " << writev;
-		}
-	}
-
 	// signal groups
 	unordered_map<string, vector<tuple<string, vector<int>, NPY_TYPES>>> siggrp_defs;
 	static NPY_TYPES ToNp[] = {
@@ -127,7 +105,7 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 		LOG_IF(ERROR, not ins_result.second) << "Bus " << name << " is already inserted and thus ignored.";
 
 		ins_result.first->second.first = bent.size() - 1;
-		auto &sent_vec = ins_result.first->second.second;
+		auto &bent_vec = ins_result.first->second.second;
 		registered_handles.emplace_back();
 		for (auto &&sg: b.sig_grps()) {
 			const string &def_name = sg.grp_def_name();
@@ -135,23 +113,53 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 			auto it = siggrp_defs.find(def_name);
 			LOG_IF(FATAL, it == siggrp_defs.end()) << "Cannot find signal group definition " << def_name;
 			for (auto &&sig: it->second) {
-				SignalEntry sent;
+				SignalEntry bent;
 				const string &s_hier = topm + prefix + get<0>(sig);
-				sent.t = get<2>(sig);
-				sent.d = get<1>(sig);
-				ExtractSignal(registered_handles.back(), sent.d, s_hier);
-				sent_vec.push_back(move(sent));
+				bent.t = get<2>(sig);
+				bent.d = get<1>(sig);
+				ExtractSignal(registered_handles.back(), bent.d, s_hier);
+				bent_vec.push_back(move(bent));
 			}
 		}
 		for (auto &&s: b.sigs()) {
-			SignalEntry sent;
+			SignalEntry bent;
 			const string &s_hier = topm + s.name();
-			sent.t = ToNp[s.np_type()];
-			sent.d.insert(sent.d.end(), s.shape().begin(), s.shape().end());
-			ExtractSignal(registered_handles.back(), sent.d, s_hier);
-			sent_vec.push_back(move(sent));
+			bent.t = ToNp[s.np_type()];
+			bent.d.insert(bent.d.end(), s.shape().begin(), s.shape().end());
+			ExtractSignal(registered_handles.back(), bent.d, s_hier);
+			bent_vec.push_back(move(bent));
 		}
 		LOG(INFO) << "There are " << registered_handles.back().size() << " handles in " << name;
+	}
+
+	// assign events
+	for (auto &&e: config.events()) {
+		const string &name = e.name();
+		const string &hier = string(topm) + e.hier();
+		const auto &ev_bound_buses = e.bound_buses();
+		const auto ins_result = eent.emplace(name, EventEntry::mapped_type());
+		if (not ins_result.second) {
+			LOG(ERROR) << "Signal " << name << " is already inserted and thus ignored.";
+			continue;
+		}
+		auto &target_entry = ins_result.first->second;
+		target_entry.first = eent.size() - 1;
+		if (e.has_hier()) {
+			auto hier_cs = ToCharUqPtr(hier);
+			LOG(INFO) << "Name: " << name << ", event = " << hier;
+			vpiHandle h = HandleByName(hier_cs.get(), nullptr);
+			s_vpi_value v;
+			const unsigned writev = target_entry.first;
+			v.format = vpiIntVal;
+			v.value.integer = writev;
+			vpi_put_value(h, &v, NULL, vpiNoDelay);
+			LOG(INFO) << "Set signal " << name << " to " << writev;
+		}
+		for (const string &bidx: ev_bound_buses) {
+			auto it = bent.find(bidx);
+			LOG_IF(FATAL, it == bent.end()) << "Signal " << bidx << " for " << name << " not found";
+			target_entry.second.push_back(it->second.first);
+		}
 	}
 }
 
@@ -167,6 +175,15 @@ static PLI_INT32 Init(PLI_BYTE8 *args)
 
 static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 {
+	vpiHandle systfref, args_iter, argh;
+	struct t_vpi_value argval;
+	systfref = vpi_handle(vpiSysTfCall, NULL);
+	args_iter = vpi_iterate(vpiArgument, systfref);
+	argh = vpi_scan(args_iter);
+	argval.format = vpiIntVal;
+	vpi_get_value(argh, &argval);
+	vpi_free_object(args_iter);
+	Python::TriggerEvent(argval.value.integer);
 	return 0;
 }
 

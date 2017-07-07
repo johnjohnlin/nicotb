@@ -602,44 +602,46 @@ class Event : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // optional string ev_hier = 2;
-  inline bool has_ev_hier() const;
-  inline void clear_ev_hier();
-  static const int kEvHierFieldNumber = 2;
-  inline const ::std::string& ev_hier() const;
-  inline void set_ev_hier(const ::std::string& value);
-  inline void set_ev_hier(const char* value);
-  inline void set_ev_hier(const char* value, size_t size);
-  inline ::std::string* mutable_ev_hier();
-  inline ::std::string* release_ev_hier();
-  inline void set_allocated_ev_hier(::std::string* ev_hier);
+  // optional string hier = 2;
+  inline bool has_hier() const;
+  inline void clear_hier();
+  static const int kHierFieldNumber = 2;
+  inline const ::std::string& hier() const;
+  inline void set_hier(const ::std::string& value);
+  inline void set_hier(const char* value);
+  inline void set_hier(const char* value, size_t size);
+  inline ::std::string* mutable_hier();
+  inline ::std::string* release_hier();
+  inline void set_allocated_hier(::std::string* hier);
 
-  // required string ev_name = 3;
-  inline bool has_ev_name() const;
-  inline void clear_ev_name();
-  static const int kEvNameFieldNumber = 3;
-  inline const ::std::string& ev_name() const;
-  inline void set_ev_name(const ::std::string& value);
-  inline void set_ev_name(const char* value);
-  inline void set_ev_name(const char* value, size_t size);
-  inline ::std::string* mutable_ev_name();
-  inline ::std::string* release_ev_name();
-  inline void set_allocated_ev_name(::std::string* ev_name);
+  // repeated string bound_buses = 3;
+  inline int bound_buses_size() const;
+  inline void clear_bound_buses();
+  static const int kBoundBusesFieldNumber = 3;
+  inline const ::std::string& bound_buses(int index) const;
+  inline ::std::string* mutable_bound_buses(int index);
+  inline void set_bound_buses(int index, const ::std::string& value);
+  inline void set_bound_buses(int index, const char* value);
+  inline void set_bound_buses(int index, const char* value, size_t size);
+  inline ::std::string* add_bound_buses();
+  inline void add_bound_buses(const ::std::string& value);
+  inline void add_bound_buses(const char* value);
+  inline void add_bound_buses(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& bound_buses() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_bound_buses();
 
   // @@protoc_insertion_point(class_scope:NicotbConfig.Event)
  private:
   inline void set_has_name();
   inline void clear_has_name();
-  inline void set_has_ev_hier();
-  inline void clear_has_ev_hier();
-  inline void set_has_ev_name();
-  inline void clear_has_ev_name();
+  inline void set_has_hier();
+  inline void clear_has_hier();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* name_;
-  ::std::string* ev_hier_;
-  ::std::string* ev_name_;
+  ::std::string* hier_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> bound_buses_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -1398,144 +1400,118 @@ inline void Event::set_allocated_name(::std::string* name) {
   }
 }
 
-// optional string ev_hier = 2;
-inline bool Event::has_ev_hier() const {
+// optional string hier = 2;
+inline bool Event::has_hier() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Event::set_has_ev_hier() {
+inline void Event::set_has_hier() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void Event::clear_has_ev_hier() {
+inline void Event::clear_has_hier() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void Event::clear_ev_hier() {
-  if (ev_hier_ != &::google::protobuf::internal::kEmptyString) {
-    ev_hier_->clear();
+inline void Event::clear_hier() {
+  if (hier_ != &::google::protobuf::internal::kEmptyString) {
+    hier_->clear();
   }
-  clear_has_ev_hier();
+  clear_has_hier();
 }
-inline const ::std::string& Event::ev_hier() const {
-  return *ev_hier_;
+inline const ::std::string& Event::hier() const {
+  return *hier_;
 }
-inline void Event::set_ev_hier(const ::std::string& value) {
-  set_has_ev_hier();
-  if (ev_hier_ == &::google::protobuf::internal::kEmptyString) {
-    ev_hier_ = new ::std::string;
+inline void Event::set_hier(const ::std::string& value) {
+  set_has_hier();
+  if (hier_ == &::google::protobuf::internal::kEmptyString) {
+    hier_ = new ::std::string;
   }
-  ev_hier_->assign(value);
+  hier_->assign(value);
 }
-inline void Event::set_ev_hier(const char* value) {
-  set_has_ev_hier();
-  if (ev_hier_ == &::google::protobuf::internal::kEmptyString) {
-    ev_hier_ = new ::std::string;
+inline void Event::set_hier(const char* value) {
+  set_has_hier();
+  if (hier_ == &::google::protobuf::internal::kEmptyString) {
+    hier_ = new ::std::string;
   }
-  ev_hier_->assign(value);
+  hier_->assign(value);
 }
-inline void Event::set_ev_hier(const char* value, size_t size) {
-  set_has_ev_hier();
-  if (ev_hier_ == &::google::protobuf::internal::kEmptyString) {
-    ev_hier_ = new ::std::string;
+inline void Event::set_hier(const char* value, size_t size) {
+  set_has_hier();
+  if (hier_ == &::google::protobuf::internal::kEmptyString) {
+    hier_ = new ::std::string;
   }
-  ev_hier_->assign(reinterpret_cast<const char*>(value), size);
+  hier_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* Event::mutable_ev_hier() {
-  set_has_ev_hier();
-  if (ev_hier_ == &::google::protobuf::internal::kEmptyString) {
-    ev_hier_ = new ::std::string;
+inline ::std::string* Event::mutable_hier() {
+  set_has_hier();
+  if (hier_ == &::google::protobuf::internal::kEmptyString) {
+    hier_ = new ::std::string;
   }
-  return ev_hier_;
+  return hier_;
 }
-inline ::std::string* Event::release_ev_hier() {
-  clear_has_ev_hier();
-  if (ev_hier_ == &::google::protobuf::internal::kEmptyString) {
+inline ::std::string* Event::release_hier() {
+  clear_has_hier();
+  if (hier_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
   } else {
-    ::std::string* temp = ev_hier_;
-    ev_hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    ::std::string* temp = hier_;
+    hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
-inline void Event::set_allocated_ev_hier(::std::string* ev_hier) {
-  if (ev_hier_ != &::google::protobuf::internal::kEmptyString) {
-    delete ev_hier_;
+inline void Event::set_allocated_hier(::std::string* hier) {
+  if (hier_ != &::google::protobuf::internal::kEmptyString) {
+    delete hier_;
   }
-  if (ev_hier) {
-    set_has_ev_hier();
-    ev_hier_ = ev_hier;
+  if (hier) {
+    set_has_hier();
+    hier_ = hier;
   } else {
-    clear_has_ev_hier();
-    ev_hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    clear_has_hier();
+    hier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   }
 }
 
-// required string ev_name = 3;
-inline bool Event::has_ev_name() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+// repeated string bound_buses = 3;
+inline int Event::bound_buses_size() const {
+  return bound_buses_.size();
 }
-inline void Event::set_has_ev_name() {
-  _has_bits_[0] |= 0x00000004u;
+inline void Event::clear_bound_buses() {
+  bound_buses_.Clear();
 }
-inline void Event::clear_has_ev_name() {
-  _has_bits_[0] &= ~0x00000004u;
+inline const ::std::string& Event::bound_buses(int index) const {
+  return bound_buses_.Get(index);
 }
-inline void Event::clear_ev_name() {
-  if (ev_name_ != &::google::protobuf::internal::kEmptyString) {
-    ev_name_->clear();
-  }
-  clear_has_ev_name();
+inline ::std::string* Event::mutable_bound_buses(int index) {
+  return bound_buses_.Mutable(index);
 }
-inline const ::std::string& Event::ev_name() const {
-  return *ev_name_;
+inline void Event::set_bound_buses(int index, const ::std::string& value) {
+  bound_buses_.Mutable(index)->assign(value);
 }
-inline void Event::set_ev_name(const ::std::string& value) {
-  set_has_ev_name();
-  if (ev_name_ == &::google::protobuf::internal::kEmptyString) {
-    ev_name_ = new ::std::string;
-  }
-  ev_name_->assign(value);
+inline void Event::set_bound_buses(int index, const char* value) {
+  bound_buses_.Mutable(index)->assign(value);
 }
-inline void Event::set_ev_name(const char* value) {
-  set_has_ev_name();
-  if (ev_name_ == &::google::protobuf::internal::kEmptyString) {
-    ev_name_ = new ::std::string;
-  }
-  ev_name_->assign(value);
+inline void Event::set_bound_buses(int index, const char* value, size_t size) {
+  bound_buses_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
 }
-inline void Event::set_ev_name(const char* value, size_t size) {
-  set_has_ev_name();
-  if (ev_name_ == &::google::protobuf::internal::kEmptyString) {
-    ev_name_ = new ::std::string;
-  }
-  ev_name_->assign(reinterpret_cast<const char*>(value), size);
+inline ::std::string* Event::add_bound_buses() {
+  return bound_buses_.Add();
 }
-inline ::std::string* Event::mutable_ev_name() {
-  set_has_ev_name();
-  if (ev_name_ == &::google::protobuf::internal::kEmptyString) {
-    ev_name_ = new ::std::string;
-  }
-  return ev_name_;
+inline void Event::add_bound_buses(const ::std::string& value) {
+  bound_buses_.Add()->assign(value);
 }
-inline ::std::string* Event::release_ev_name() {
-  clear_has_ev_name();
-  if (ev_name_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = ev_name_;
-    ev_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
+inline void Event::add_bound_buses(const char* value) {
+  bound_buses_.Add()->assign(value);
 }
-inline void Event::set_allocated_ev_name(::std::string* ev_name) {
-  if (ev_name_ != &::google::protobuf::internal::kEmptyString) {
-    delete ev_name_;
-  }
-  if (ev_name) {
-    set_has_ev_name();
-    ev_name_ = ev_name;
-  } else {
-    clear_has_ev_name();
-    ev_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
+inline void Event::add_bound_buses(const char* value, size_t size) {
+  bound_buses_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Event::bound_buses() const {
+  return bound_buses_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Event::mutable_bound_buses() {
+  return &bound_buses_;
 }
 
 // -------------------------------------------------------------------
