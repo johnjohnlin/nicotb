@@ -17,6 +17,7 @@
 from nicotb_bridge import events, event_dict, buses, bus_dict, ReadBus, WriteBus
 from typing import Union
 from collections import deque
+import numpy as np
 
 __all__ = [
 	'WriteBus',
@@ -31,11 +32,81 @@ __all__ = [
 waiting_coro = [list() for _ in range(len(event_dict))]
 event_queue = deque()
 
+class Signal(object):
+	"A wrapper that keeps a signal in a bus"
+	__slots__ = ["_x", "_value"]
+	def __init__(self, v, x):
+		self._value = v
+		self._x = x
+
+	@property
+	def x(self):
+		return self._x
+
+	@x.setter
+	def x(self):
+		np.copyto(self._x, x)
+
+	@property
+	def value(self):
+		return self._value
+
+	@value.setter
+	def value(self):
+		np.copyto(self._value, value)
+
+	def set_to_z(self):
+		self._value.fill(0)
+		self._x.fill(-1)
+
+	def set_to_x(self):
+		self._value.fill(-1)
+		self._x.fill(-1)
+
+	def set_to_number(self):
+		self._x.fill(0)
+
+	@property
+	def is_number(self):
+		return not np.any(self._x)
+
+class BusWrap(object):
+	"A wrapper that keeps a bus with its reference and provide accessor"
+	__slots__ = ["idx", "vs", "xs", "signals"]
+	def __init__(self, idx, ev_entry):
+		self.idx = idx
+		self.vs, self.xs = ev_entry
+		self.signals = tuple(Signal(v, x) for v, x in zip(*ev_entry))
+
+	def __getitem__(self, i):
+		return self.signals[i]
+
+	def write(self):
+		WriteBus(self.idx, self.vs, self.xs)
+
+	def set_to_z(self):
+		for s in self.signals:
+			s.set_to_z()
+
+	def set_to_x(self):
+		for s in self.signals:
+			s.set_to_x()
+
+	def set_to_number(self):
+		for s in self.signals:
+			s.set_to_number()
+
+	@property
+	def is_number(self):
+		return all(s.is_number for s in self.signals)
+
+buses_wrapped = list(BusWrap(i, b) for i, b in enumerate(buses))
+
 def ToBusIdx(idx: Union[str,int]):
 	return bus_dict[idx] if isinstance(idx, str) else idx
 
 def GetBus(idx):
-	return buses[ToBusIdx(idx)]
+	return buses_wrapped[ToBusIdx(idx)]
 
 def ToEventIdx(idx: Union[str,int]):
 	return event_dict[idx] if isinstance(idx, str) else idx

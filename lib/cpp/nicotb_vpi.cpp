@@ -184,7 +184,7 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 	// buses
 	for (auto&& b: config.buses()) {
 		const string &name = b.name();
-		const string &hier = b.hier();
+		const string &hier = topm + (b.hier().empty() ? string() : b.hier() + '.');
 		auto ins_result = bent.emplace(name, BusEntry::mapped_type());
 		LOG_IF(ERROR, not ins_result.second) << "Bus " << name << " is already inserted and thus ignored.";
 
@@ -198,7 +198,7 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 			LOG_IF(FATAL, it == siggrp_defs.end()) << "Cannot find signal group definition " << def_name;
 			for (auto &&sig: it->second) {
 				SignalEntry bent;
-				const string &s_hier = topm + prefix + get<0>(sig);
+				const string &s_hier = hier + prefix + get<0>(sig);
 				bent.t = get<2>(sig);
 				bent.d = get<1>(sig);
 				ExtractSignal(registered_handles.back(), bent.d, s_hier);
@@ -207,7 +207,7 @@ static void ReadConfig(EventEntry &eent, BusEntry &bent)
 		}
 		for (auto &&s: b.sigs()) {
 			SignalEntry bent;
-			const string &s_hier = topm + s.name();
+			const string &s_hier = hier + s.name();
 			bent.t = ToNp[s.np_type()];
 			bent.d.insert(bent.d.end(), s.shape().begin(), s.shape().end());
 			ExtractSignal(registered_handles.back(), bent.d, s_hier);
@@ -268,7 +268,9 @@ static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 	argval.format = vpiIntVal;
 	vpi_get_value(argh, &argval);
 	vpi_free_object(args_iter);
-	Python::TriggerEvent(argval.value.integer);
+	if (argval.value.integer >= 0) {
+		Python::TriggerEvent(argval.value.integer);
+	}
 	return 0;
 }
 
@@ -277,12 +279,18 @@ static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 
 extern "C" void VpiBoot()
 {
-	using namespace Nicotb;
-	s_vpi_systf_data tasks[] = {
-		{vpiSysTask, vpiSysTask, "$NicotbTriggerEvent", Vpi::TriggerEvent, nullptr, nullptr, nullptr},
-		{vpiSysTask, vpiSysTask, "$NicotbInit", Vpi::Init, nullptr, nullptr, nullptr}
+	using namespace Nicotb::Vpi;
+	static s_vpi_systf_data tasks[] = {
+		{vpiSysTask, vpiSysTask, "$NicotbTriggerEvent", TriggerEvent, nullptr, nullptr, nullptr},
+		{vpiSysTask, vpiSysTask, "$NicotbInit", Init, nullptr, nullptr, nullptr}
 	};
 	for (auto&& task: tasks) {
 		vpi_register_systf(&task);
 	}
 }
+
+// TODO: this is not recognized by ncverilog?
+void (*vlog_startup_routines[])() = {
+	VpiBoot,
+	nullptr
+};

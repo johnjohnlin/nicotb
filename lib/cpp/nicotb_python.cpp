@@ -130,6 +130,7 @@ static void ImportTest()
 {
 	PyObject *p_module_name = PyUnicode_FromString(GetEnv("TEST"));
 	PyObject *p_module = PyImport_Import(p_module_name);
+	PyErr_Print();
 	p_set_event = PyObject_GetAttrString(p_module, "SetEvent");
 	p_main_loop = PyObject_GetAttrString(p_module, "MainLoop");
 	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr) <<

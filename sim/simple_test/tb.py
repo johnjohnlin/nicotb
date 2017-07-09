@@ -29,16 +29,16 @@ def rst_out2():
 	print("reset out 2")
 
 def clk():
+	abus = GetBus("a")
+	cbbus = GetBus("cb")
 	yield "rst_out"
 	while True:
 		yield "clk"
-		if GetBus("a")[1][0][0]:
-			GetBus("cb")[0][0][1,1] = -1
-			GetBus("cb")[1][0][1,1] = -1
+		if abus.is_number:
+			cbbus[0].value[1,1] = abus[0].value[0]
 		else:
-			GetBus("cb")[0][0][1,1] = GetBus("a")[0][0][0]
-			GetBus("cb")[1][0][1,1] = 0
-		WriteBus(ToBusIdx("cb"), GetBus("cb")[0], GetBus("cb")[1])
+			cbbus.set_to_x()
+		cbbus.write()
 
 RegisterCoroutines([
 	clk(),
