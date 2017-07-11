@@ -15,11 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
-module ClockedSignal(input i_clk, input i_rst);
+module ClockedSignal(input clk, input rst);
 integer rst_in = -1;
 integer rst_out = -1;
-integer clk = -1;
-always @(negedge i_rst) $NicotbTriggerEvent(rst_in);
-always @(posedge i_rst) $NicotbTriggerEvent(rst_out);
-always @(posedge i_clk) if (i_rst) $NicotbTriggerEvent(clk);
+integer clock = -1;
+always @(negedge rst) $NicotbTriggerEvent(rst_in);
+always @(posedge rst) $NicotbTriggerEvent(rst_out);
+always @(posedge clk) if (rst) $NicotbTriggerEvent(clock);
+endmodule
+
+module LevelDetect(input clk, input rst, input level);
+parameter bit LEVEL = 1;
+integer detected = -1;
+always @(posedge clk or negedge rst) begin
+	if (rst && level == LEVEL) begin
+		$NicotbTriggerEvent(detected);
+	end
+end
+endmodule
+
+module ConditionLevelDetect(input clk, input rst, input level, input cond, output both);
+parameter bit LEVEL = 1;
+integer detected = -1;
+assign both = level == LEVEL && cond;
+always @(posedge clk or negedge rst) begin
+	if (rst && both) begin
+		$NicotbTriggerEvent(detected);
+	end
+end
 endmodule

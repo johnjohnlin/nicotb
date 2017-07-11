@@ -16,32 +16,25 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
+from nicotb.bus import OneWire
 
-def rst_out():
-	print("reset wait")
-	yield "rst_out"
-	print("reset out")
-	yield "rst_out"
-	print("this should not happen")
+def main():
+	rs_ev = ToEventIdx("rst")
+	ck_ev = ToEventIdx("clk")
+	odval_ev = ToEventIdx("dst_get")
+	src_val = GetBus("src_dval")
+	dsc_val = GetBus("dst_dval")
+	src_dat = GetBus("src")
+	dst_dat = GetBus("dst")
 
-def rst_out2():
-	yield "rst_out"
-	print("reset out 2")
-
-def clk():
-	abus = GetBus("a")
-	cbbus = GetBus("cb")
-	yield "rst_out"
-	while True:
-		yield "clk"
-		if abus.is_number:
-			cbbus[0].value[1,1] = abus[0].value[0]
-		else:
-			cbbus.SetToX()
-		cbbus.Write()
+	yield rs_ev
+	master = OneWire.Master(src_val, src_dat, ck_ev)
+	values = master.values
+	for i in range(30):
+		values[0][0] = i
+		yield from master.Send(values)
+		yield ck_ev
 
 RegisterCoroutines([
-	clk(),
-	rst_out(),
-	rst_out2(),
+	main(),
 ])

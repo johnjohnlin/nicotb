@@ -27,7 +27,7 @@ buses {
 }
 events {
 	name: "clk"
-	hier: "u_cs.clk"
+	hier: "u_cs.clock"
 	bound_buses: "a"
 }
 events {

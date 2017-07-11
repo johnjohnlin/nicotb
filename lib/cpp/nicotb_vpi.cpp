@@ -109,7 +109,7 @@ using namespace google::protobuf;
 static inline vpiHandle HandleByName(char *hier, vpiHandle h)
 {
 	vpiHandle ret = vpi_handle_by_name(hier, h);
-	LOG_IF(FATAL, not ret) << "Cannot find" << hier;
+	LOG_IF(FATAL, not ret) << "Cannot find " << hier;
 	LOG(INFO) << "Found vpiHandle " << ret << " from " << hier << " of vpiHandle " << h;
 	return ret;
 }
