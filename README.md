@@ -6,7 +6,7 @@ for Python-Verilog co-simulation through VPI which:
 * Maximize the use of existing popular libraries,
 * Simplify the interface between Python & Verilog and
 * Let users define the Python-VPI bridging through a configuration file,
-  rather than through program.
+  rather than through program (might be changed in the near future).
 
 # Python-Verilog Interface of Nicotb
 
@@ -100,6 +100,5 @@ and there are still many TODOs,
 which include but are not limited to:
 
 * More complete runtime error checking and more verbose message,
-* Support for more protocols and more examples,
-* Check on more platforms and
-* Scoreboard.
+* Support for more protocols and more examples and
+* Check on more platforms.
