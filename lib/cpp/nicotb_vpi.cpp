@@ -269,7 +269,8 @@ static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 	vpi_get_value(argh, &argval);
 	vpi_free_object(args_iter);
 	if (argval.value.integer >= 0) {
-		Python::TriggerEvent(argval.value.integer);
+		argval.value.integer = Python::TriggerEvent(argval.value.integer);
+		vpi_put_value(systfref, &argval, nullptr, vpiNoDelay);
 	}
 	return 0;
 }
@@ -281,7 +282,7 @@ extern "C" void VpiBoot()
 {
 	using namespace Nicotb::Vpi;
 	static s_vpi_systf_data tasks[] = {
-		{vpiSysTask, vpiSysTask, "$NicotbTriggerEvent", TriggerEvent, nullptr, nullptr, nullptr},
+		{vpiSysFunc, vpiIntFunc, "$NicotbTriggerEvent", TriggerEvent, nullptr, nullptr, nullptr},
 		{vpiSysTask, vpiSysTask, "$NicotbInit", Init, nullptr, nullptr, nullptr}
 	};
 	for (auto&& task: tasks) {

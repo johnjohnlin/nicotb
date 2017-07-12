@@ -5,12 +5,6 @@ buses {
 	}
 }
 buses {
-	name: "dst_dval"
-	sigs {
-		name: "o_dval"
-	}
-}
-buses {
 	name: "src"
 	hier: "u_dut"
 	sigs {
@@ -33,7 +27,7 @@ events {
 	hier: "u_cr.rst_out"
 }
 events {
-	name: "dst_get"
+	name: "dst_dval"
 	hier: "u_ldo.detected"
 	bound_buses: "dst"
 }

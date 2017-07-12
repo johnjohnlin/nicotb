@@ -18,7 +18,7 @@ from nicotb import *
 
 class Master(Receiver):
 	__slots__ = ["valid", "data", "clk", "A", "B"]
-	def __init__(self, valid, data, clk, A = 1, B = 5, callbacks = list()):
+	def __init__(self, valid: Signal, data: Signal, clk: int, A = 1, B = 5, callbacks = list()):
 		super(Master, self).__init__(callbacks)
 		self.valid = valid
 		self.data = data
@@ -50,11 +50,13 @@ class Master(Receiver):
 
 class Slave(Receiver):
 	__slots__ = ["valid", "data"]
-	def __init__(self, valid):
+	def __init__(self, valid: int, data: Signal, callbacks = list()):
+		super(Slave, self).__init__(callbacks)
 		self.valid = valid
 		self.data = data
+		Fork(self.Monitor())
 
 	def Monitor(self):
 		while True:
-			yield self.valie
-			self.Get(data)
+			yield self.valid
+			super(Slave, self).Get(self.data)

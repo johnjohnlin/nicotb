@@ -140,11 +140,14 @@ static void ImportTest()
 	Py_DECREF(p_module);
 }
 
-void TriggerEvent(size_t i)
+bool TriggerEvent(size_t i)
 {
-	Py_XDECREF(PyObject_CallFunction(p_set_event, "n", Py_ssize_t(i)));
-	Py_XDECREF(PyObject_CallFunction(p_main_loop, ""));
+	PyObject *o1 = PyObject_CallFunction(p_set_event, "n", Py_ssize_t(i));
+	PyObject *o2 = PyObject_CallFunction(p_main_loop, "");
 	PyErr_Print();
+	Py_XDECREF(o1);
+	Py_XDECREF(o2);
+	return o1 == nullptr or o2 == nullptr;
 }
 
 void Init(const EventEntry &_e, const BusEntry &_b)
