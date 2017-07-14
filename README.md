@@ -4,9 +4,7 @@ Nicotb aims to provide a tiny but extensible framework
 for Python-Verilog co-simulation through VPI which:
 
 * Maximize the use of existing popular libraries,
-* Simplify the interface between Python & Verilog and
-* Let users define the Python-VPI bridging through a configuration file,
-  rather than through program (might be changed in the near future).
+* Unify and simplify the interface between Python & Verilog.
 
 # Python-Verilog Interface of Nicotb
 
@@ -21,7 +19,7 @@ Nicotb provides the Python-VPI mainly through these 3 structures:
 In Python, the buses and events can be accessed by name or index through accessors,
 and they are global structures.
 However, the signal of a bus can only be accessed by index,
-which is the order they are defined in the protobuf text.
+which is the order they are defined in the code using CreateBus(es).
 
 The Signal has 2 members in form of numpy arrays: value and x,
 which encode the 4-value of Verilog (0/1/x/z)
@@ -34,7 +32,7 @@ Only bool and 1/2/4B signed/unsigned integer signal types are supported.
 
 A Bus has a tuple consists of signals,
 and independent signals can be accessed by bus[index].
-The write() function helps you write all signals to Verilog.
+The Write() function helps you write all signals to Verilog.
 Again, note that the signals are also references,
 so don't try to assign new arrays to them.
 
@@ -44,11 +42,10 @@ and (2) lets the Python codes wait on this event start to run.
 
 # Nicotb Co-simulation Workflow
 
-To run the Nicotb, at least 3 files are required.
+To run the Nicotb, at least 2 files are required.
 
 * XXX.sv: The testbench defining the signals to be tested and controlling timing.
 * XXX.py: The Python testbench which waits for events and respond to them.
-* XXX.txt: Text format protocol buffer describing the Python-VPI bridging.
 
 After preparing the files, the Makefile helps you run the testbench.
 
@@ -57,7 +54,7 @@ cd <SOME PATH>
 make -f <NICOTB PATH>/sim/Makefile XXX
 ```
 
-By default the three files must have the same name
+By default the files must have the same name
 but the provided Makefile allows you to fine-tune each file name.
 Also, you have to modify the path in Makefile
 in order to locate the irun (aka ncverilog) binary.
@@ -65,7 +62,7 @@ in order to locate the irun (aka ncverilog) binary.
 # Dependencies
 
 * numpy and development package (TODO: version?)
-* Google glog, protobuf and development packages (TODO: version?)
+* Google glog development packages (TODO: version?)
 * Python (>= 3.3 ?)
 * ncverilog (TODO: how about other tools which also support VPI)
 * Linux (TODO: how to port?)
@@ -80,12 +77,16 @@ make -C lib/cpp
 
 The examples are under the sim/ directory.
 To run the examples, we have prepared a Makefile.
-Currently there are only example.
+There are but roughly
+Currently there are 2 examples, and you will lanuch the simulation
+roughly like this.
 
 ```bash
-cd sim/simple_test
-make -f ../Makefile tb
+cd sim/OOO
+make -f ../Makefile XXX
 ```
+
+where XXX is the name of toplevel Python and Verilog files.
 
 However, you might face many problems when building the VPI library.
 The Makefile is based on the configuration of my system,
@@ -100,5 +101,6 @@ and there are still many TODOs,
 which include but are not limited to:
 
 * More complete runtime error checking and more verbose message,
+* Method(s) for cleaning up the Python code,
 * Support for more protocols and more examples and
 * Check on more platforms.
