@@ -14,27 +14,35 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-from nicotb_bridge import events, event_dict, buses, bus_dict, ReadBus, WriteBus
-from typing import Union, Tuple
+from nicotb_bridge import BindEvent, BindBus, ReadBus, WriteBus
+from os import environ
+from typing import Union, Tuple, Iterable, Any
 from collections import deque
 import numpy as np
 
 __all__ = [
 	"WriteBus",
-	"ToBusIdx",
+	"GetBusIdx",
 	"GetBus",
-	"ToEventIdx",
+	"GetEventIdx",
 	"SetEvent",
 	"Fork",
 	"RegisterCoroutines",
+	"CreateBus",
+	"CreateBuses",
+	"CreateEvent",
+	"CreateEvents",
 	"MainLoop",
 	"Receiver",
 	"Signal",
-	"Report",
-	"scoreboards",
 ]
-
-waiting_coro = [list() for _ in range(len(event_dict))]
+SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
+TOP_PREFIX = environ.get("TOPMODULE") + "."
+read_on_events = list()
+buses = list()
+event_dict = dict()
+bus_dict = dict()
+waiting_coro = list()
 event_queue = deque()
 
 class Signal(object):
@@ -79,7 +87,7 @@ class Signal(object):
 	def is_number(self):
 		return not np.any(self._x)
 
-class BusWrap(object):
+class Bus(object):
 	"""
 	A wrapper that keeps a bus with its reference and provide accessor.
 	There are 2 ways to access the signals:
@@ -99,10 +107,11 @@ class BusWrap(object):
 	Using these shortcuts, only (1-2), (2-1) and (2-2) is available.
 	"""
 	__slots__ = ["idx", "_vs", "_xs", "signals"]
-	def __init__(self, idx, ev_entry):
+	def __init__(self, idx, vs, xs):
 		self.idx = idx
-		self._vs, self._xs = ev_entry
-		self.signals = tuple(Signal(v, x) for v, x in zip(*ev_entry))
+		self._vs = vs
+		self._xs = xs
+		self.signals = tuple(Signal(v, x) for v, x in zip(vs, xs))
 
 	@property
 	def values(self) -> Tuple[np.ndarray, ...]:
@@ -141,6 +150,9 @@ class BusWrap(object):
 	def __getitem__(self, i):
 		return self.signals[i]
 
+	def Read(self):
+		ReadBus(self.idx, self._vs, self._xs)
+
 	def Write(self):
 		WriteBus(self.idx, self._vs, self._xs)
 
@@ -172,23 +184,63 @@ class Receiver(object):
 		for cb in self.callbacks:
 			cb(x)
 
-buses_wrapped = list(BusWrap(i, b) for i, b in enumerate(buses))
+def CreateBus(name: str, signals: Tuple[Tuple[Union[None, str], str, Tuple[int,...], Any]]):
+	n = len(bus_dict)
+	if n != bus_dict.setdefault(name, n):
+		print("Bus [{}] already exists".format(name))
+	else:
+		# Create numpy arrays
+		_CreateTup = lambda: tuple(
+			np.zeros(
+				shape=(1,) if len(signal[2]) == 0 else signal[2],
+				dtype=np.int32 if signal[3] is None else signal[3]
+			) for signal in signals
+		)
+		vtup = _CreateTup()
+		xtup = _CreateTup()
+		assert all(a.dtype in SUPPORT_NP_TYPES for a in vtup)
+		buses.append(Bus(n, vtup, xtup))
+		# Prepare for the C++ part
+		grps = list()
+		cur_hier = TOP_PREFIX
+		for hier, sig, shape, nptype in signals:
+			if not hier is None:
+				cur_hier = TOP_PREFIX + hier + '.' if hier else TOP_PREFIX
+			grps.append(((cur_hier+sig).encode(), shape))
+		BindBus(grps)
 
-def ToBusIdx(idx: Union[str,int]):
+def CreateEvent(name: str, hier: str, buses: Iterable[int]):
+	n = len(event_dict)
+	if n != event_dict.setdefault(name, n):
+		print("Event [{}] already exists".format(name))
+	else:
+		BindEvent(n, (TOP_PREFIX+hier).encode())
+		read_on_events.append(list(buses))
+		waiting_coro.append(list())
+
+def CreateBuses(descs: dict):
+	for k, v in descs.items():
+		CreateBus(k, v)
+
+def CreateEvents(descs: dict):
+	for k, v in descs.items():
+		CreateEvent(k, v[0], v[1])
+
+def GetBusIdx(idx: Union[str,int]):
 	return bus_dict[idx] if isinstance(idx, str) else idx
 
 def GetBus(idx):
-	return buses_wrapped[ToBusIdx(idx)]
+	return buses[GetBusIdx(idx)]
 
-def ToEventIdx(idx: Union[str,int]):
+def GetEventIdx(idx: Union[str,int]):
 	return event_dict[idx] if isinstance(idx, str) else idx
 
 def SetEvent(ev):
-	event_queue.append(ToEventIdx(ev))
+	event_queue.append(GetEventIdx(ev))
 
 def Fork(c):
 	try:
-		waiting_coro[ToEventIdx(next(c))].append(c)
+		waiting_coro[GetEventIdx(next(c))].append(c)
 	except StopIteration:
 		pass
 
@@ -201,13 +253,7 @@ def MainLoop():
 		event_idx = event_queue.pop()
 		proc = waiting_coro[event_idx]
 		waiting_coro[event_idx] = list()
-		event = events[event_idx]
-		for read_idx in event:
-			ReadBus(read_idx, buses[read_idx][0], buses[read_idx][1])
+		read_idxs = read_on_events[event_idx]
+		for read_idx in read_idxs:
+			buses[read_idx].Read()
 		RegisterCoroutines(proc)
-
-scoreboards = list()
-def Report():
-	for i, s in enumerate(scoreboards):
-		print("Reporting scoreboard {}...".format(i))
-		s.Report()

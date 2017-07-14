@@ -26,8 +26,6 @@ namespace Python {
 using namespace std;
 
 static PyObject* PyInit_func();
-static EventEntry e;
-static BusEntry b;
 static PyObject *p_set_event;
 static PyObject *p_main_loop;
 
@@ -57,48 +55,48 @@ static PyObject* WriteBus(PyObject *dummy, PyObject *args)
 	return Py_None;
 }
 
-static void InitEvent(PyObject *&p_list, PyObject *&p_dict)
+static PyObject* BindEvent(PyObject *dummy, PyObject *args)
 {
-	p_list = PyList_New(e.size());
-	p_dict = PyDict_New();
-	for (auto &&event: e) {
-		auto &name = event.first;
-		auto &idx = event.second.first;
-		auto &read_buses = event.second.second;
-		PyObject *p_idx = PyLong_FromLong(idx);
-		PyObject *p_read_buses = PyTuple_New(read_buses.size());
-		for (size_t bidx = 0; bidx < read_buses.size(); ++bidx) {
-			PyTuple_SET_ITEM(p_read_buses, bidx, PyLong_FromLong(read_buses[bidx]));
-		}
-		PyDict_SetItemString(p_dict, name.c_str(), p_idx);
-		PyList_SET_ITEM(p_list, idx, p_read_buses);
-		Py_DECREF(p_idx);
+	unsigned i;
+	PyObject *p_hier;
+	if (!PyArg_ParseTuple(args, "IO", &i, &p_hier)) {
+		return nullptr;
 	}
+	BindEventExt(i, CHECK_NOTNULL(PyBytes_AsString(p_hier)));
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
-static void InitBus(PyObject *&p_list, PyObject *&p_dict)
+static PyObject* BindBus(PyObject *dummy, PyObject *args)
 {
-	p_list = PyList_New(b.size());
-	p_dict = PyDict_New();
-	for (auto &&bus: b) {
-		auto &name = bus.first;
-		auto &idx = bus.second.first;
-		auto &sig = bus.second.second;
-		PyObject *p_idx = PyLong_FromLong(idx);
-		PyObject *p_v_tup = PyTuple_New(sig.size());
-		PyObject *p_x_tup = PyTuple_New(sig.size());
-		PyDict_SetItemString(p_dict, name.c_str(), p_idx);
-		for (size_t sidx = 0; sidx < sig.size(); ++sidx) {
-			vector<npy_intp> dim_intp(sig[sidx].d.begin(), sig[sidx].d.end());
-			if (dim_intp.empty()) {
-				dim_intp.push_back(1);
-			}
-			PyTuple_SET_ITEM(p_v_tup, sidx, PyArray_ZEROS(dim_intp.size(), dim_intp.data(), sig[sidx].t, 0));
-			PyTuple_SET_ITEM(p_x_tup, sidx, PyArray_ZEROS(dim_intp.size(), dim_intp.data(), sig[sidx].t, 0));
-		}
-		PyList_SET_ITEM(p_list, idx, PyTuple_Pack(2, p_v_tup, p_x_tup));
-		Py_DECREF(p_idx);
+	BusEntry b;
+	PyObject *p_lst;
+	if (!PyArg_ParseTuple(args, "O", &p_lst)) {
+		return nullptr;
 	}
+	PyObject *p_it = CHECK_NOTNULL(PyObject_GetIter(p_lst));
+	for (PyObject *p_tup = PyIter_Next(p_it); p_tup; p_tup = PyIter_Next(p_it)) {
+		PyObject *p_hier = CHECK_NOTNULL(PySequence_GetItem(p_tup, 0));
+		PyObject *p_shape = CHECK_NOTNULL(PySequence_GetItem(p_tup, 1));
+		// get hierarchy
+		char *s = CHECK_NOTNULL(PyBytes_AsString(p_hier));
+		b.emplace_back(s, vector<int>());
+		// iterate shapes
+		auto &shapes = b.back().second;
+		PyObject *p_shape_it = CHECK_NOTNULL(PyObject_GetIter(p_shape));
+		for (PyObject *p_int = PyIter_Next(p_shape_it); p_int; p_int = PyIter_Next(p_shape_it)) {
+			shapes.push_back(PyLong_AsLong(p_int));
+			// release current
+			Py_DECREF(p_int);
+		}
+		Py_DECREF(p_shape_it);
+		// release current
+		Py_DECREF(p_tup);
+	}
+	Py_DECREF(p_it);
+	BindBusExt(b);
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject* InitBridgeModule()
@@ -107,6 +105,8 @@ static PyObject* InitBridgeModule()
 	static PyMethodDef nicotb_bridge_methods[] = {
 		{"WriteBus", WriteBus, METH_VARARGS, ""},
 		{"ReadBus", ReadBus, METH_VARARGS, ""},
+		{"BindEvent", BindEvent, METH_VARARGS, ""},
+		{"BindBus", BindBus, METH_VARARGS, ""},
 		{nullptr, nullptr, 0, nullptr}
 	};
 	static PyModuleDef nicotb_bridge_module = {
@@ -117,12 +117,6 @@ static PyObject* InitBridgeModule()
 	};
 	PyObject *p_bridge_module = PyModule_Create(&nicotb_bridge_module);
 	PyObject *p_events, *p_event_dict, *p_buses, *p_bus_dict;
-	InitEvent(p_events, p_event_dict);
-	InitBus(p_buses, p_bus_dict);
-	PyModule_AddObject(p_bridge_module, "events", p_events);
-	PyModule_AddObject(p_bridge_module, "event_dict", p_event_dict);
-	PyModule_AddObject(p_bridge_module, "buses", p_buses);
-	PyModule_AddObject(p_bridge_module, "bus_dict", p_bus_dict);
 	return p_bridge_module;
 }
 
@@ -150,13 +144,10 @@ bool TriggerEvent(size_t i)
 	return o1 == nullptr or o2 == nullptr;
 }
 
-void Init(const EventEntry &_e, const BusEntry &_b)
+void Init()
 {
-	e = _e;
-	b = _b;
 	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
 	Py_Initialize();
-	_import_array();
 	ImportTest();
 	PyErr_Print();
 }

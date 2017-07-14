@@ -16,6 +16,7 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
+import numpy as np
 
 def rst_out():
 	print("reset wait")
@@ -31,6 +32,8 @@ def rst_out2():
 def clk():
 	abus = GetBus("a")
 	cbbus = GetBus("cb")
+	cbbus.SetToX()
+	cbbus[0].x[1,1] = 0
 	yield "rst_out"
 	while True:
 		yield "clk"
@@ -40,6 +43,19 @@ def clk():
 			cbbus.SetToX()
 		cbbus.Write()
 
+CreateBuses({
+	"cb": (
+		("", "c", (2,4), None),
+		(None, "b", (3,2,4), None),
+	),
+	"a": (
+		("", "a", tuple(), np.int16),
+	),
+})
+CreateEvents({
+	"rst_out": ("u_cs.rst_out", []),
+	"clk":     ("u_cs.clock",   [GetBusIdx('a')]),
+})
 RegisterCoroutines([
 	clk(),
 	rst_out(),

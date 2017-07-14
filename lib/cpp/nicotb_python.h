@@ -16,35 +16,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 #include <glog/logging.h>
-#include <numpy/arrayobject.h>
+#include <Python.h>
 #include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <utility>
 
 namespace Nicotb {
 
-typedef std::unordered_map<std::string, std::pair<
-	size_t,             // index
-	std::vector<size_t> // bus index read
->> EventEntry;
-struct SignalEntry {
-	NPY_TYPES t;
-	std::vector<int> d;
-};
-typedef std::unordered_map<std::string, std::pair<
-	size_t,                  // index
-	std::vector<SignalEntry>
+typedef std::vector<std::pair<
+	char*,           // hier
+	std::vector<int> // shape
 >> BusEntry;
 
 namespace Python {
 
-void Init(const EventEntry &e, const BusEntry &b);
+void Init();
 bool TriggerEvent(size_t i);
 // VPI must implement these functions
 void ReadBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list);
 void WriteBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list);
+void BindEventExt(const size_t i, char *hier);
+void BindBusExt(const BusEntry &bus);
 
 } // namespace Python
 } // namespace Nicotb

@@ -16,15 +16,20 @@
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 #include "vpi_user.h"
 #include "nicotb_python.h"
-#include "nicotb_config.pb.h"
+#include <numpy/ndarrayobject.h>
 #include <fstream>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 namespace Nicotb {
 
 using namespace std;
 static vector<vector<vpiHandle>> registered_handles;
+
+namespace Vpi {
+
+static inline vpiHandle HandleByName(char *hier, vpiHandle h);
+static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char *hier);
+
+} // namespace Vpi
 
 namespace Python {
 
@@ -99,12 +104,27 @@ void WriteBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
 	ITER_ROUTINE_END
 }
 
+void BindBusExt(const BusEntry &bus)
+{
+	registered_handles.emplace_back();
+	for (auto &&s: bus) {
+		Vpi::ExtractSignal(registered_handles.back(), s.second, s.first);
+	}
+}
+
+void BindEventExt(const size_t i, char *hier)
+{
+	vpiHandle h = Vpi::HandleByName(hier, nullptr);
+	s_vpi_value v;
+	v.format = vpiIntVal;
+	v.value.integer = i;
+	vpi_put_value(h, &v, nullptr, vpiNoDelay);
+	LOG(INFO) << "Set signal " << hier << " to " << i;
+}
+
 } // namespace Python
 
 namespace Vpi {
-
-using namespace google;
-using namespace google::protobuf;
 
 static inline vpiHandle HandleByName(char *hier, vpiHandle h)
 {
@@ -114,11 +134,11 @@ static inline vpiHandle HandleByName(char *hier, vpiHandle h)
 	return ret;
 }
 
-static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, const string &hier)
+static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char *hier)
 {
 	auto hier_cs = ToCharUqPtr(hier);
 	vector<vpiHandle> src, dst;
-	src.push_back(vpi_handle_by_name(hier_cs.get(), nullptr));
+	src.push_back(vpi_handle_by_name(hier, nullptr));
 	if (src.back()) {
 		LOG(INFO) << hier << " founded: " << src.back();
 	} else {
@@ -141,119 +161,10 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, cons
 	handles.insert(handles.end(), src.begin(), src.end());
 }
 
-static void ReadConfig(EventEntry &eent, BusEntry &bent)
-{
-	// read protobuf
-	const char *cfg_file = GetEnv("CONNECT_CONFIG");
-
-	ifstream ifs(cfg_file);
-	LOG_IF(FATAL, not ifs.is_open()) << cfg_file << " is missing";
-
-	io::IstreamInputStream iifs(&ifs);
-	NicotbConfig::NicotbConfig config;
-	const bool parse_success = TextFormat::Parse(&iifs, &config);
-	LOG_IF(FATAL, not parse_success) << "Cannot parse " << cfg_file;
-
-	ifs.close();
-
-	// get vpi
-	const string topm = string(GetEnv("TOPMODULE")) + '.';
-	// signal groups
-	unordered_map<string, vector<tuple<string, vector<int>, NPY_TYPES>>> siggrp_defs;
-	static NPY_TYPES ToNp[] = {
-		NPY_BOOL,
-		NPY_BOOL, NPY_UBYTE, NPY_USHORT, NPY_UINT,
-		NPY_BYTE, NPY_SHORT, NPY_INT
-	};
-	for (auto &&gd: config.siggrp_defs()) {
-		const string &name = gd.name();
-		const auto ins_result = siggrp_defs.emplace(name, decltype(siggrp_defs)::mapped_type());
-		LOG_IF(ERROR, not ins_result.second) << "Signal group " << name << " is already defined.";
-		auto &grp_vec = ins_result.first->second;
-		if (ins_result.second) {
-			for (auto &&s: gd.sigs()) {
-				grp_vec.emplace_back(
-					s.name(),
-					vector<int>(s.shape().begin(), s.shape().end()),
-					ToNp[s.np_type()]
-				);
-			}
-		}
-	}
-
-	// buses
-	for (auto&& b: config.buses()) {
-		const string &name = b.name();
-		const string &hier = topm + (b.hier().empty() ? string() : b.hier() + '.');
-		auto ins_result = bent.emplace(name, BusEntry::mapped_type());
-		LOG_IF(ERROR, not ins_result.second) << "Bus " << name << " is already inserted and thus ignored.";
-
-		ins_result.first->second.first = bent.size() - 1;
-		auto &bent_vec = ins_result.first->second.second;
-		registered_handles.emplace_back();
-		for (auto &&sg: b.sig_grps()) {
-			const string &def_name = sg.grp_def_name();
-			const string &prefix = sg.prefix();
-			auto it = siggrp_defs.find(def_name);
-			LOG_IF(FATAL, it == siggrp_defs.end()) << "Cannot find signal group definition " << def_name;
-			for (auto &&sig: it->second) {
-				SignalEntry bent;
-				const string &s_hier = hier + prefix + get<0>(sig);
-				bent.t = get<2>(sig);
-				bent.d = get<1>(sig);
-				ExtractSignal(registered_handles.back(), bent.d, s_hier);
-				bent_vec.push_back(move(bent));
-			}
-		}
-		for (auto &&s: b.sigs()) {
-			SignalEntry bent;
-			const string &s_hier = hier + s.name();
-			bent.t = ToNp[s.np_type()];
-			bent.d.insert(bent.d.end(), s.shape().begin(), s.shape().end());
-			ExtractSignal(registered_handles.back(), bent.d, s_hier);
-			bent_vec.push_back(move(bent));
-		}
-		LOG(INFO) << "There are " << registered_handles.back().size() << " handles in " << name;
-	}
-
-	// assign events
-	for (auto &&e: config.events()) {
-		const string &name = e.name();
-		const string &hier = string(topm) + e.hier();
-		const auto &ev_bound_buses = e.bound_buses();
-		const auto ins_result = eent.emplace(name, EventEntry::mapped_type());
-		if (not ins_result.second) {
-			LOG(ERROR) << "Signal " << name << " is already inserted and thus ignored.";
-			continue;
-		}
-		auto &target_entry = ins_result.first->second;
-		target_entry.first = eent.size() - 1;
-		if (e.has_hier()) {
-			auto hier_cs = ToCharUqPtr(hier);
-			LOG(INFO) << "Name: " << name << ", event = " << hier;
-			vpiHandle h = HandleByName(hier_cs.get(), nullptr);
-			s_vpi_value v;
-			const unsigned writev = target_entry.first;
-			v.format = vpiIntVal;
-			v.value.integer = writev;
-			vpi_put_value(h, &v, nullptr, vpiNoDelay);
-			LOG(INFO) << "Set signal " << hier << " to " << writev;
-		}
-		for (const string &bidx: ev_bound_buses) {
-			auto it = bent.find(bidx);
-			LOG_IF(FATAL, it == bent.end()) << "Signal " << bidx << " for " << name << " not found";
-			target_entry.second.push_back(it->second.first);
-		}
-	}
-}
-
 static PLI_INT32 Init(PLI_BYTE8 *args)
 {
-	InitGoogleLogging("nicotb");
-	EventEntry e;
-	BusEntry b;
-	ReadConfig(e, b);
-	Python::Init(e, b);
+	google::InitGoogleLogging("nicotb");
+	Python::Init();
 	_import_array(); // this is required for each compile unit
 	return 0;
 }
