@@ -40,15 +40,19 @@ class Scoreboard(object):
 		fail = False
 		for t in self.tests.values():
 			if not t.is_clean:
-				print("There are still values in expecting queue of {}\n{}".format(t.name, t.exp))
+				print("There are still {} values in expecting queue of [{}]".format(
+					len(t.exp), t.name)
+				)
 				fail = True
 			if t.err != 0:
-				"There are {} errors in {}".format(t.err, t.name)
+				"There are {} errors in [{}]".format(t.err, t.name)
 				fail = True
-		if fail:
-			print("FAIL")
-		else:
-			print("PASS")
+		print("Status of [{}]: {}, (correct/error): {}/{}".format(
+			t.name,
+			"FAIL" if fail else "PASS",
+			t.ok,
+			t.err,
+		))
 
 	@classmethod
 	def ReportAll(cls):
@@ -56,11 +60,12 @@ class Scoreboard(object):
 			scb.Report()
 
 class Tester(object):
-	__slots__ = ["exp", "max_err", "name", "err", "formator"]
+	__slots__ = ["exp", "max_err", "name", "err", "ok", "formator"]
 	def __init__(self, name, max_err, formator):
 		self.exp = deque()
 		self.max_err = max_err
 		self.name = name
+		self.ok = 0
 		self.err = 0
 		self.formator = formator
 
@@ -71,6 +76,8 @@ class Tester(object):
 			print(self.formator(head, x))
 			assert self.err < self.max_err, "Tester [{}] has reached the max error count".format(self.name)
 			self.err += 1
+		else:
+			self.ok += 1
 
 	def Expect(self, x):
 		self.exp.append(x)
@@ -80,7 +87,7 @@ class Tester(object):
 		return len(self.exp) == 0
 
 class Stacker(Receiver):
-	"""This class stacks a BusWrap object to tuples of ndarray"""
+	"""This class stacks a Bus object to tuples of ndarray"""
 	__slots__ = ["n", "curn", "buf"]
 	def __init__(self, n=0, callbacks=list()):
 		super(Stacker, self).__init__(callbacks)

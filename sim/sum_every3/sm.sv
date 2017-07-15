@@ -31,7 +31,9 @@ initial begin
 	#1 $NicotbInit();
 	#10 rst = 0;
 	#10 rst = 1;
-	#1000 $finish;
+	#1000
+	$NicotbFinal;
+	$finish;
 end
 
 ClockedSignal u_cr(clk, rst);

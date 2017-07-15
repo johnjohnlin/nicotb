@@ -35,7 +35,9 @@ initial begin
 	#1 $NicotbInit();
 	#10 rst = 0;
 	#10 rst = 1;
-	#100 $finish;
+	#100
+	$NicotbFinal();
+	$finish;
 end
 
 initial begin

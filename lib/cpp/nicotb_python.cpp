@@ -28,6 +28,8 @@ using namespace std;
 static PyObject* PyInit_func();
 static PyObject *p_set_event;
 static PyObject *p_main_loop;
+static PyObject *p_bridge_module;
+static PyObject *p_test_module;
 
 static PyObject* ReadBus(PyObject *dummy, PyObject *args)
 {
@@ -115,23 +117,21 @@ static PyObject* InitBridgeModule()
 		nicotb_bridge_methods,
 		nullptr, nullptr, nullptr, nullptr
 	};
-	PyObject *p_bridge_module = PyModule_Create(&nicotb_bridge_module);
-	PyObject *p_events, *p_event_dict, *p_buses, *p_bus_dict;
+	p_bridge_module = PyModule_Create(&nicotb_bridge_module);
 	return p_bridge_module;
 }
 
 static void ImportTest()
 {
 	PyObject *p_module_name = PyUnicode_FromString(GetEnv("TEST"));
-	PyObject *p_module = PyImport_Import(p_module_name);
+	p_test_module = PyImport_Import(p_module_name);
 	PyErr_Print();
-	CHECK_NOTNULL(p_module);
-	p_set_event = PyObject_GetAttrString(p_module, "SetEvent");
-	p_main_loop = PyObject_GetAttrString(p_module, "MainLoop");
+	CHECK_NOTNULL(p_test_module);
+	p_set_event = PyObject_GetAttrString(p_test_module, "SetEvent");
+	p_main_loop = PyObject_GetAttrString(p_test_module, "MainLoop");
 	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr) <<
 		"Cannot find necessary functions, did you from nicotb import * in your code?";
 	Py_DECREF(p_module_name);
-	Py_DECREF(p_module);
 }
 
 bool TriggerEvent(size_t i)
@@ -150,6 +150,20 @@ void Init()
 	Py_Initialize();
 	ImportTest();
 	PyErr_Print();
+}
+
+void Final()
+{
+	PyObject *p_scb = PyObject_GetAttrString(p_test_module, "Scoreboard");
+	if (p_scb != nullptr) {
+		Py_XDECREF(CHECK_NOTNULL(
+			PyObject_CallMethod(p_scb, "ReportAll", "")
+		));
+	}
+	Py_DECREF(p_set_event);
+	Py_DECREF(p_main_loop);
+	Py_DECREF(p_bridge_module);
+	Py_DECREF(p_test_module);
 }
 
 } // namespace Python

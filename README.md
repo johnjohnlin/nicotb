@@ -101,6 +101,5 @@ and there are still many TODOs,
 which include but are not limited to:
 
 * More complete runtime error checking and more verbose message,
-* Method(s) for cleaning up the Python code,
 * Support for more protocols and more examples and
 * Check on more platforms.
