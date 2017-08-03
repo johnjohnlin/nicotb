@@ -56,8 +56,14 @@ class Scoreboard(object):
 
 	@classmethod
 	def ReportAll(cls):
+		sep1 = "=" * 60
+		sep2 = "-" * 60
+		print(sep1)
+		print("Scoreboard Reports")
+		print(sep1)
 		for scb in cls.scoreboards:
 			scb.Report()
+			print(sep2)
 
 class Tester(object):
 	__slots__ = ["exp", "max_err", "name", "err", "ok", "formator"]
@@ -149,3 +155,6 @@ def ExpandSignalGroup(hier: str, prefix: str, groups):
 		(None if i != 0 else hier, prefix+s[0], s[1], s[2])
 		for i, s in enumerate(groups)
 	)
+
+def RandProb(A, B):
+	return np.random.randint(B) < A

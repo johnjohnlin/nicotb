@@ -35,7 +35,7 @@ def main():
 
 	yield rs_ev
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
-	slave = OneWire.Slave(odval_ev, dst_dat, callbacks=[print, st.Get])
+	slave = OneWire.Slave(dst_dat, odval_ev, callbacks=[print, st.Get])
 	values = master.values
 	arr = np.random.randint(16, size=N*3, dtype=np.int32)
 	golden = np.sum(np.reshape(arr, (-1,3)), axis=1, keepdims=1, dtype=np.int32)

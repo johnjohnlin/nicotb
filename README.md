@@ -33,8 +33,8 @@ Only bool and 1/2/4B signed/unsigned integer signal types are supported.
 A Bus has a tuple consists of signals,
 and independent signals can be accessed by bus[index].
 The Write() function helps you write all signals to Verilog.
-Again, note that the signals are also references,
-so don't try to assign new arrays to them.
+*Again, note that the signals are also references,
+so don't try to assign new arrays to them.*
 
 Event is usually an integer in Verilog, if the event occurred,
 the Nicotb framework (1) reads the Verilog and fill the buses with the read values.
@@ -101,5 +101,9 @@ and there are still many TODOs,
 which include but are not limited to:
 
 * More complete runtime error checking and more verbose message,
+* More abundant event schedule and sync primitives,
 * Support for more protocols and more examples and
 * Check on more platforms.
+
+If you are looking at a complete Python co-simulation framework,
+please Google Cocotb.

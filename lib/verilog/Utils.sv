@@ -34,13 +34,10 @@ always @(posedge clk or negedge rst) begin
 end
 endmodule
 
-module ConditionLevelDetect(input clk, input rst, input level, input cond, output both);
-parameter bit LEVEL = 1;
-integer detected = -1;
-assign both = level == LEVEL && cond;
-always @(posedge clk or negedge rst) begin
-	if (rst && both) begin
-		if($NicotbTriggerEvent(detected)) $finish;
-	end
+module Finish(input fin);
+initial begin
+	@(posedge fin)
+	$NicotbFinal;
+	$finish;
 end
 endmodule

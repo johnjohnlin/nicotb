@@ -15,48 +15,58 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import *
+from nicotb.utils import RandProb
 
 class Master(Receiver):
-	__slots__ = ["valid", "data", "clk", "A", "B"]
-	def __init__(self, valid: Bus, data: Bus, clk: int, A = 1, B = 5, callbacks = list()):
+	__slots__ = ["rdy", "data", "ack", "clk", "A", "B"]
+	def __init__(self, rdy: Bus, data: Bus, ack: int, clk: int, A = 1, B = 5, callbacks=list()):
 		super(Master, self).__init__(callbacks)
-		self.valid = valid
+		self.rdy = rdy
 		self.data = data
+		self.ack = ack
 		self.clk = clk
 		self.A = A
 		self.B = B
-		self.valid.SetToNumber()
-		self.data.SetToNumber()
+		self.rdy.value[0] = 0
+		self.rdy.Write()
 
 	def SendIter(self):
 		raise NotImplementedError()
 
 	def Send(self, data):
-		self.valid.value[0] = 1
-		self.data.SetToNumber()
-		self.data.values = data
-		self.valid.Write()
-		self.data.Write()
 		yield self.clk
+		self.rdy.value[0] = 1
+		self.data.values = data
+		self.rdy.Write()
+		self.data.Write()
+		yield self.ack
 		super(Master, self).Get(data)
-		self.valid.value[0] = 0
+		self.rdy.value[0] = 0
 		self.data.SetToX()
-		self.valid.Write()
+		self.rdy.Write()
 		self.data.Write()
 
 	@property
-	def values(self) -> tuple:
+	def values(self):
 		return self.data.values
 
 class Slave(Receiver):
-	__slots__ = ["valid", "data"]
-	def __init__(self, data: Bus, valid: int, callbacks = list()):
+	__slots__ = ["can_ack", "data", "rdy", "clk", "A", "B"]
+	def __init__(self, can_ack: Bus, data: Bus, rdy: int, A = 1, B = 5, callbacks=list()):
 		super(Slave, self).__init__(callbacks)
-		self.valid = valid
+		self.can_ack = can_ack
 		self.data = data
+		self.rdy = rdy
+		self.A = A
+		self.B = B
+		self.can_ack.value[0] = RandProb(self.A, self.B)
+		self.can_ack.Write()
 		Fork(self.Monitor())
 
 	def Monitor(self):
 		while True:
-			yield self.valid
-			super(Slave, self).Get(self.data)
+			yield self.rdy
+			if self.can_ack.value[0]:
+				super(Slave, self).Get(self.data)
+			self.can_ack.value[0] = RandProb(self.A, self.B)
+			self.can_ack.Write()

@@ -34,6 +34,7 @@ __all__ = [
 	"CreateEvents",
 	"MainLoop",
 	"Receiver",
+	"Bus",
 	"Signal",
 ]
 SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
@@ -90,9 +91,10 @@ class Signal(object):
 class Bus(object):
 	"""
 	A wrapper that keeps a bus with its reference and provide accessor.
-	There are 2 ways to access the signals:
+	There are 3 ways to access the signals:
 	(1) self.values[99], self.xs[99]
 	(2) self.signals[99].x, self.signals[99].value
+	(3) self[99].x, self[99].value (Shortcut for (2))
 	There are many ways to modify the reference:
 	(1-1) self.values[99] = 0 (wrong, "values" is a tuple)
 	(1-2) self.values[99][0] = 123 (modify the element of numpy array directly)
@@ -121,7 +123,7 @@ class Bus(object):
 	@values.setter
 	def values(self, v):
 		if not v is self._vs:
-			for ss, vv in zip(self._signals, v):
+			for ss, vv in zip(self.signals, v):
 				ss.value = vv
 
 	@property
@@ -132,16 +134,24 @@ class Bus(object):
 	@xs.setter
 	def xs(self, x):
 		if not x is self._xs:
-			for ss, xx in zip(self._signals, x):
+			for ss, xx in zip(self.signals, x):
 				ss.x = xx
 
 	@property
 	def value(self) -> np.ndarray:
 		return self._vs[0]
 
+	@value.setter
+	def value(self, value):
+		self.signals.value = value
+
 	@property
 	def x(self) -> np.ndarray:
 		return self._xs
+
+	@x.setter
+	def x(self, x):
+		self.signals.x = x
 
 	@property
 	def signal(self) -> Signal:
