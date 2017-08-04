@@ -30,21 +30,37 @@ class Master(Receiver):
 		self.rdy.value[0] = 0
 		self.rdy.Write()
 
-	def SendIter(self):
-		raise NotImplementedError()
-
-	def Send(self, data):
-		yield self.clk
+	def _D(self, data):
 		self.rdy.value[0] = 1
+		self.data.SetToNumber()
 		self.data.values = data
 		self.rdy.Write()
 		self.data.Write()
-		yield self.ack
-		super(Master, self).Get(data)
+
+	def _X(self):
 		self.rdy.value[0] = 0
 		self.data.SetToX()
 		self.rdy.Write()
 		self.data.Write()
+
+	def SendIter(self, it):
+		for data in it:
+			self._D(data)
+			yield self.ack
+			if not RandProb(self.A, self.B):
+				self._X()
+				yield self.clk
+				while not RandProb(self.A, self.B):
+					yield self.clk
+		self._X()
+		yield self.clk
+
+	def Send(self, data):
+		self._D(data)
+		yield self.ack
+		super(Master, self).Get(data)
+		self._X()
+		yield self.clk
 
 	@property
 	def values(self):

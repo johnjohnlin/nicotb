@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "ClockedSignal.sv"
+`include "Utils.sv"
 `include "cnt_dut.sv"
 
 module cnt;

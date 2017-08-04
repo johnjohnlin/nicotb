@@ -35,7 +35,6 @@ class Master(Receiver):
 		self.data.values = data
 		self.valid.Write()
 		self.data.Write()
-		super(Master, self).Get(data)
 
 	def _X(self):
 		self.valid.value[0] = 0
@@ -44,19 +43,24 @@ class Master(Receiver):
 		self.data.Write()
 
 	def SendIter(self, it):
-		yield self.clk
 		for data in it:
 			self._D(data)
 			yield self.clk
-			self._X()
-			while not RandProb(self.A, self.B):
+			super(Master, self).Get(data)
+			if not RandProb(self.A, self.B):
+				self._X()
 				yield self.clk
+				while not RandProb(self.A, self.B):
+					yield self.clk
+		self._X()
+		yield self.clk
 
 	def Send(self, data):
-		yield self.clk
 		self._D(data)
 		yield self.clk
+		super(Master, self).Get(data)
 		self._X()
+		yield self.clk
 
 	@property
 	def values(self) -> tuple:

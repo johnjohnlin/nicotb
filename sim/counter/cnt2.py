@@ -22,7 +22,7 @@ import numpy as np
 from itertools import repeat
 
 def main():
-	N = 7
+	Ns = np.array([0,8,7], dtype=np.int32)
 	ck_ev = GetEventIdx("clk")
 	iack_ev = GetEventIdx("iack")
 	ordy_ev = GetEventIdx("ordy")
@@ -33,8 +33,10 @@ def main():
 	f_bus       = GetBus("f"      )
 	scb = Scoreboard()
 	test = scb.GetTest("test")
-	st = Stacker(N+1, [test.Get])
-	golden = np.arange(N+1, dtype=np.int32)[:,np.newaxis]
+	golden = np.concatenate([
+		np.arange(N+1, dtype=np.int32) for N in Ns
+	])[:,np.newaxis]
+	st = Stacker(golden.shape[0], [test.Get])
 	test.Expect((golden,))
 	yield "rst_out"
 
@@ -42,8 +44,11 @@ def main():
 	slave = TwoWire.Slave(ocanack_bus, o_bus, ordy_ev, callbacks=[st.Get])
 
 	values = master.values
-	values[0][0] = N
-	yield from master.Send(master.data.values)
+	def it():
+		for N in Ns:
+			values[0][0] = N
+			yield values
+	yield from master.SendIter(it())
 
 	# for i in range(100):
 	# 	yield ck_ev
