@@ -1,0 +1,10 @@
+*
+!*/
+!*.py
+!*.cpp
+!*.v
+!*.sv
+!*.h
+!*.md
+!Makefile
+!.gitignore

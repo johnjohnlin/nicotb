@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import *
+from nicotb.utils import RandProb
 
 class Master(Receiver):
 	__slots__ = ["valid", "data", "clk", "A", "B"]
@@ -28,21 +29,34 @@ class Master(Receiver):
 		self.valid.SetToNumber()
 		self.data.SetToNumber()
 
-	def SendIter(self):
-		raise NotImplementedError()
-
-	def Send(self, data):
+	def _D(self, data):
 		self.valid.value[0] = 1
 		self.data.SetToNumber()
 		self.data.values = data
 		self.valid.Write()
 		self.data.Write()
-		yield self.clk
 		super(Master, self).Get(data)
+
+	def _X(self):
 		self.valid.value[0] = 0
 		self.data.SetToX()
 		self.valid.Write()
 		self.data.Write()
+
+	def SendIter(self, it):
+		yield self.clk
+		for data in it:
+			self._D(data)
+			yield self.clk
+			self._X()
+			while not RandProb(self.A, self.B):
+				yield self.clk
+
+	def Send(self, data):
+		yield self.clk
+		self._D(data)
+		yield self.clk
+		self._X()
 
 	@property
 	def values(self) -> tuple:
