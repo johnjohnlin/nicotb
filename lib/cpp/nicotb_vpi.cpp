@@ -163,9 +163,7 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 
 static PLI_INT32 Init(PLI_BYTE8 *args)
 {
-	google::InitGoogleLogging("nicotb");
-	Python::Init();
-	_import_array(); // this is required for each compile unit
+	Python::InitTest();
 	return 0;
 }
 
@@ -206,6 +204,9 @@ extern "C" void VpiBoot()
 	for (auto&& task: tasks) {
 		vpi_register_systf(&task);
 	}
+	google::InitGoogleLogging("nicotb");
+	Nicotb::Python::Init();
+	_import_array(); // this is required for each compile unit
 }
 
 // TODO: this is not recognized by ncverilog?

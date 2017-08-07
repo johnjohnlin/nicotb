@@ -148,6 +148,10 @@ void Init()
 {
 	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
 	Py_Initialize();
+}
+
+void InitTest()
+{
 	ImportTest();
 	PyErr_Print();
 }

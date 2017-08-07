@@ -33,6 +33,7 @@ typedef std::vector<std::pair<
 namespace Python {
 
 void Init();
+void InitTest();
 void Final();
 bool TriggerEvent(size_t i);
 // VPI must implement these functions
