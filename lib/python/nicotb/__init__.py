@@ -31,6 +31,8 @@ __all__ = [
 	"CreateBus",
 	"CreateBuses",
 	"CreateEvent",
+	"CreateAnonymousEvent",
+	"DestroyAnonymousEvent",
 	"CreateEvents",
 	"MainLoop",
 	"Receiver",
@@ -42,6 +44,7 @@ TOP_PREFIX = environ.get("TOPMODULE") + "."
 read_on_events = list()
 buses = list()
 event_dict = dict()
+event_released = set()
 bus_dict = dict()
 waiting_coro = list()
 event_queue = deque()
@@ -220,13 +223,25 @@ def CreateBus(name: str, signals: Tuple[Tuple[Union[None, str], str, Tuple[int,.
 		BindBus(grps)
 
 def CreateEvent(name: str, hier: str, buses: Iterable[int]):
-	n = len(event_dict)
+	n = len(waiting_coro)
 	if n != event_dict.setdefault(name, n):
 		print("Event [{}] already exists".format(name))
 	else:
 		BindEvent(n, (TOP_PREFIX+hier).encode())
 		read_on_events.append(list(buses))
 		waiting_coro.append(list())
+
+def CreateAnonymousEvent():
+	if len(event_released):
+		return event_released.pop()
+	else:
+		n = len(waiting_coro)
+		waiting_coro.append(list())
+		return n
+
+def DestroyAnonymousEvent(ev: int):
+	waiting_coro[ev] = list()
+	event_released.add(ev)
 
 def CreateBuses(descs: dict):
 	for k, v in descs.items():
@@ -246,11 +261,16 @@ def GetEventIdx(idx: Union[str,int]):
 	return event_dict[idx] if isinstance(idx, str) else idx
 
 def SetEvent(ev):
-	event_queue.append(GetEventIdx(ev))
+	event_queue.append((GetEventIdx(ev),True))
+
+def SetEvent1(ev):
+	event_queue.append((GetEventIdx(ev),False))
 
 def Fork(c):
 	try:
-		waiting_coro[GetEventIdx(next(c))].append(c)
+		idx = GetEventIdx(next(c))
+		if not idx is None:
+			waiting_coro[idx].append(c)
 	except StopIteration:
 		pass
 
@@ -260,9 +280,12 @@ def RegisterCoroutines(coro: list):
 
 def MainLoop():
 	while len(event_queue) != 0:
-		event_idx = event_queue.pop()
-		proc = waiting_coro[event_idx]
-		waiting_coro[event_idx] = list()
+		event_idx, all_ev = event_queue.pop()
+		if all_ev:
+			proc = waiting_coro[event_idx]
+			waiting_coro[event_idx] = list()
+		else:
+			proc = [waiting_coro.pop()]
 		read_idxs = read_on_events[event_idx]
 		for read_idx in read_idxs:
 			buses[read_idx].Read()
