@@ -19,6 +19,7 @@ import numpy as np
 
 class AllEvent(object):
 	def __init__(self, events):
+		raise NotImplementedError()
 		self._event = CreateAnonymousEvent()
 		self.events = events
 
@@ -34,13 +35,14 @@ class AllEvent(object):
 		yield event
 		events.discard(event)
 		if not events:
-			TriggerEvent(trigger_on_fin)
+			SetEvent(trigger_on_fin)
 
 	def Destroy(self):
 		DestroyAnonymousEvent(self._event)
 
 class AnyEvent(object):
 	def __init__(self, events):
+		raise NotImplementedError()
 		self._event = CreateAnonymousEvent()
 		self.events = events
 
@@ -56,25 +58,26 @@ class AnyEvent(object):
 		yield event
 		if flag:
 			flag.clear()
-			TriggerEvent(trigger_on_fin)
+			SetEvent(trigger_on_fin)
 
 	def Destroy(self):
 		DestroyAnonymousEvent(self._event)
 
-class ForkOnEnd(object):
+class JoinableFork(object):
 	def __init__(self, coro):
+		self.fin = False
 		self._event = CreateAnonymousEvent()
 		self.coro = coro
 		Fork(self._wrap())
 
 	@property
 	def event(self):
-		return self._event
+		return None if self.fin else self._event
 
 	def _wrap(self):
 		yield from self.coro
-		DestroyAnonymousEvent(self._event)
-		self._event = None
+		self.fin = True
+		SetEvent(self._event)
 
 	def Destroy(self):
-		pass
+		DestroyAnonymousEvent(self._event)

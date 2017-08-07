@@ -237,6 +237,7 @@ def CreateAnonymousEvent():
 	else:
 		n = len(waiting_coro)
 		waiting_coro.append(list())
+		read_on_events.append(list())
 		return n
 
 def DestroyAnonymousEvent(ev: int):
@@ -268,9 +269,11 @@ def SetEvent1(ev):
 
 def Fork(c):
 	try:
-		idx = GetEventIdx(next(c))
-		if not idx is None:
-			waiting_coro[idx].append(c)
+		while True:
+			idx = GetEventIdx(next(c))
+			if not idx is None:
+				waiting_coro[idx].append(c)
+				break
 	except StopIteration:
 		pass
 
