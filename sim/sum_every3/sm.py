@@ -58,9 +58,9 @@ CreateBuses({
 	),
 })
 CreateEvents({
-	"clk":      ("u_cr.clock",     []),
-	"rst":      ("u_cr.rst_out",   []),
-	"dst_dval": ("u_ldo.detected", [GetBusIdx("dst")]),
+	"clk":      "u_cr.clock",
+	"rst":      "u_cr.rst_out",
+	"dst_dval": "u_ldo.detected",
 })
 RegisterCoroutines([
 	main(),

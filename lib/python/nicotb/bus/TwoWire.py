@@ -83,6 +83,7 @@ class Slave(Receiver):
 		while True:
 			yield self.rdy
 			if self.can_ack.value[0]:
+				self.data.Read()
 				super(Slave, self).Get(self.data)
 			self.can_ack.value[0] = RandProb(self.A, self.B)
 			self.can_ack.Write()

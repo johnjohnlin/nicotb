@@ -59,10 +59,10 @@ CreateBuses({
 	"f":       (("u_f", "fin"    , tuple(), None),),
 })
 CreateEvents({
-	"rst_out": ("u_cs.rst_out",  []),
-	"clk":     ("u_cs.clock",    []),
-	"iack":    ("u_d0.detected", []),
-	"ordy":    ("u_d1.detected", [GetBusIdx('o')]),
+	"rst_out": "u_cs.rst_out",
+	"clk":     "u_cs.clock",
+	"iack":    "u_d0.detected",
+	"ordy":    "u_d1.detected",
 })
 RegisterCoroutines([
 	main(),

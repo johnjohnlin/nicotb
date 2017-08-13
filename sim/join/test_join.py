@@ -35,8 +35,8 @@ def main():
 	d2_bus = GetBus("d2")
 
 	yield rs_ev
-	master1 = OneWire.Master(dval1_bus, d1_bus, ck_ev, callbacks=[print])
-	master2 = OneWire.Master(dval2_bus, d2_bus, ck_ev, callbacks=[print])
+	master1 = OneWire.Master(dval1_bus, d1_bus, ck_ev, callbacks=[print], A=4)
+	master2 = OneWire.Master(dval2_bus, d2_bus, ck_ev, callbacks=[print], A=4)
 
 	values1 = master1.values
 	values2 = master2.values
@@ -51,6 +51,8 @@ def main():
 		# will cause small leak if you do not destroy them
 		th_fin1.Destroy()
 		th_fin2.Destroy()
+		for i in range(30):
+			yield ck_ev
 	print("All done")
 
 CreateBuses({
@@ -60,8 +62,8 @@ CreateBuses({
 	"d2":    (("", "d2"   , tuple(), None),),
 })
 CreateEvents({
-	"clk":      ("u_cr.clock",     []),
-	"rst":      ("u_cr.rst_out",   []),
+	"clk": "u_cr.clock",
+	"rst": "u_cr.rst_out",
 })
 RegisterCoroutines([
 	main(),

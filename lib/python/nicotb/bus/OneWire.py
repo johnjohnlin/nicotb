@@ -77,4 +77,5 @@ class Slave(Receiver):
 	def Monitor(self):
 		while True:
 			yield self.valid
+			self.data.Read()
 			super(Slave, self).Get(self.data)

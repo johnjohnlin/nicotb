@@ -41,7 +41,6 @@ __all__ = [
 ]
 SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
 TOP_PREFIX = environ.get("TOPMODULE") + "."
-read_on_events = list()
 buses = list()
 event_dict = dict()
 event_released = set()
@@ -222,13 +221,12 @@ def CreateBus(name: str, signals: Tuple[Tuple[Union[None, str], str, Tuple[int,.
 			grps.append(((cur_hier+sig).encode(), shape))
 		BindBus(grps)
 
-def CreateEvent(name: str, hier: str, buses: Iterable[int]):
+def CreateEvent(name: str, hier: str):
 	n = len(waiting_coro)
 	if n != event_dict.setdefault(name, n):
 		print("Event [{}] already exists".format(name))
 	else:
 		BindEvent(n, (TOP_PREFIX+hier).encode())
-		read_on_events.append(list(buses))
 		waiting_coro.append(list())
 
 def CreateAnonymousEvent():
@@ -237,7 +235,6 @@ def CreateAnonymousEvent():
 	else:
 		n = len(waiting_coro)
 		waiting_coro.append(list())
-		read_on_events.append(list())
 		return n
 
 def DestroyAnonymousEvent(ev: int):
@@ -250,7 +247,7 @@ def CreateBuses(descs: dict):
 
 def CreateEvents(descs: dict):
 	for k, v in descs.items():
-		CreateEvent(k, v[0], v[1])
+		CreateEvent(k, v)
 
 def GetBusIdx(idx: Union[str,int]):
 	return bus_dict[idx] if isinstance(idx, str) else idx
@@ -289,7 +286,4 @@ def MainLoop():
 			waiting_coro[event_idx] = list()
 		else:
 			proc = [waiting_coro.pop()]
-		read_idxs = read_on_events[event_idx]
-		for read_idx in read_idxs:
-			buses[read_idx].Read()
 		RegisterCoroutines(proc)

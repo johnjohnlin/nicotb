@@ -37,6 +37,7 @@ def clk():
 	yield "rst_out"
 	while True:
 		yield "clk"
+		abus.Read()
 		if abus.is_number:
 			cbbus[0].value[1,1] = abus[0].value[0]
 		else:
@@ -53,8 +54,8 @@ CreateBuses({
 	),
 })
 CreateEvents({
-	"rst_out": ("u_cs.rst_out", []),
-	"clk":     ("u_cs.clock",   [GetBusIdx('a')]),
+	"rst_out": "u_cs.rst_out",
+	"clk":     "u_cs.clock",
 })
 RegisterCoroutines([
 	clk(),
