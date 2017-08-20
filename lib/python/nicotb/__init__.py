@@ -61,7 +61,7 @@ class Signal(object):
 		return self._value
 
 	@value.setter
-	def value(self):
+	def value(self, value):
 		if not value is self._value:
 			np.copyto(self._value, value)
 
@@ -71,7 +71,7 @@ class Signal(object):
 		return self._x
 
 	@x.setter
-	def x(self):
+	def x(self, x):
 		if not x is self._x:
 			np.copyto(self._x, x)
 

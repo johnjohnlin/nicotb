@@ -47,6 +47,7 @@ class Master(Receiver):
 		for data in it:
 			self._D(data)
 			yield self.ack
+			super(Master, self).Get(data)
 			if not RandProb(self.A, self.B):
 				self._X()
 				yield self.clk
