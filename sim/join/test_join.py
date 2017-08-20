@@ -43,11 +43,9 @@ def main():
 	for t1, t2 in [[5,10], [10,5]]:
 		th_fin1 = JoinableFork(master1.SendIter(it(values1, t1)))
 		th_fin2 = JoinableFork(master2.SendIter(it(values2, t2)))
-		print("Waiting: {}, {}".format(th_fin1.event, th_fin2.event))
-		yield th_fin1.event
-		print("Middle: {}, {}".format(th_fin1.event, th_fin2.event))
-		yield th_fin2.event
-		print("Finish: {}, {}".format(th_fin1.event, th_fin2.event))
+		yield from th_fin1.Join()
+		yield from th_fin2.Join()
+		print("Finish")
 		# will cause small leak if you do not destroy them
 		th_fin1.Destroy()
 		th_fin2.Destroy()
