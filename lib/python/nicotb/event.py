@@ -14,41 +14,30 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
+from nicotb.common import *
+from nicotb_bridge import BindEvent
+from collections import deque
 
-from nicotb import *
-from nicotb.primitives import Semaphore
-import numpy as np
+event_released = set()
+waiting_coro = list()
+event_queue = deque()
 
-def f0():
-	print("f0")
-	global cnt
-	while True:
-		cnt += 1
-		yield clk_ev
+def CreateEvent(hier: str = ""):
+	n = len(waiting_coro)
+	if len(hier):
+		BindEvent(n, (TOP_PREFIX+hier).encode())
+	waiting_coro.append(list())
+	return n
 
-def f1():
-	print("f1")
-	for i in range(10):
-		for j in range(1+np.random.randint(20)):
-			yield clk_ev
-		print("Rel?")
-		yield from sem.Release()
-		print(f"Rel {sem.n}")
+def CreateEvents(descs: list):
+	return [CreateEvent(event) for event in descs]
 
-def f2():
-	print("f2")
-	for i in [1,2,3,4]:
-		for j in range(1+np.random.randint(10)):
-			yield clk_ev
-		print("Acq?")
-		yield from sem.Acquire(i)
-		print(f"Acq {sem.n}")
+def GetEvent(ev):
+	return ev if isinstance(ev, int) else CreateEvent(ev)
 
-clk_ev = CreateEvent("u_cs.clock")
-cnt = 0
-sem = Semaphore(-1)
-RegisterCoroutines([
-	f0(),
-	f1(),
-	f2(),
-])
+def SignalEvent(ev, all_ev=True):
+	event_queue.append((ev, all_ev))
+
+def DestroyEvent(ev: int):
+	waiting_coro[ev] = list()
+	event_released.add(ev)

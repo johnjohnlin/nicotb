@@ -17,22 +17,15 @@
 
 from nicotb import *
 from nicotb.utils import Scoreboard, Stacker
-from nicotb.bus import OneWire
+from nicotb.protocol import OneWire
 import numpy as np
 
 N = 10
 
 def main():
-	rs_ev = GetEventIdx("rst")
-	ck_ev = GetEventIdx("clk")
-	odval_ev = GetEventIdx("dst_dval")
-	src_val = GetBus("src_dval")
-	src_dat = GetBus("src")
-	dst_dat = GetBus("dst")
 	scb = Scoreboard()
 	test1 = scb.GetTest("test1")
 	st = Stacker(N, [test1.Get])
-
 	yield rs_ev
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
 	slave = OneWire.Slave(dst_dat, odval_ev, callbacks=[print, st.Get])
@@ -44,24 +37,26 @@ def main():
 	for i in arr:
 		values[0][0] = i
 		yield from master.Send(values)
+	for i in range(10):
 		yield ck_ev
+	assert st.is_clean
 
-CreateBuses({
-	"src_dval": (
+src_val, src_dat, dst_dat = CreateBuses([
+	(
 		("", "i_dval", tuple(), None),
 	),
-	"src": (
+	(
 		("u_dut", "i", tuple(), None),
 	),
-	"dst": (
+	(
 		("u_dut", "o", tuple(), None),
 	),
-})
-CreateEvents({
-	"clk":      "u_cr.clock",
-	"rst":      "u_cr.rst_out",
-	"dst_dval": "u_ldo.detected",
-})
+])
+ck_ev, rs_ev, odval_ev = CreateEvents([
+	"u_cr.clock",
+	"u_cr.rst_out",
+	"u_ldo.detected",
+])
 RegisterCoroutines([
 	main(),
 ])

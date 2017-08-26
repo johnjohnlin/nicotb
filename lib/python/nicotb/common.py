@@ -14,41 +14,8 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-
-from nicotb import *
-from nicotb.primitives import Semaphore
+from os import environ
 import numpy as np
 
-def f0():
-	print("f0")
-	global cnt
-	while True:
-		cnt += 1
-		yield clk_ev
-
-def f1():
-	print("f1")
-	for i in range(10):
-		for j in range(1+np.random.randint(20)):
-			yield clk_ev
-		print("Rel?")
-		yield from sem.Release()
-		print(f"Rel {sem.n}")
-
-def f2():
-	print("f2")
-	for i in [1,2,3,4]:
-		for j in range(1+np.random.randint(10)):
-			yield clk_ev
-		print("Acq?")
-		yield from sem.Acquire(i)
-		print(f"Acq {sem.n}")
-
-clk_ev = CreateEvent("u_cs.clock")
-cnt = 0
-sem = Semaphore(-1)
-RegisterCoroutines([
-	f0(),
-	f1(),
-	f2(),
-])
+SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
+TOP_PREFIX = environ.get("TOPMODULE") + "."

@@ -127,7 +127,7 @@ static void ImportTest()
 	p_test_module = PyImport_Import(p_module_name);
 	PyErr_Print();
 	CHECK_NOTNULL(p_test_module);
-	p_set_event = PyObject_GetAttrString(p_test_module, "SetEvent");
+	p_set_event = PyObject_GetAttrString(p_test_module, "SignalEvent");
 	p_main_loop = PyObject_GetAttrString(p_test_module, "MainLoop");
 	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr) <<
 		"Cannot find necessary functions, did you from nicotb import * in your code?";
@@ -136,7 +136,7 @@ static void ImportTest()
 
 bool TriggerEvent(size_t i)
 {
-	PyObject *o1 = PyObject_CallFunction(p_set_event, "n", Py_ssize_t(i));
+	PyObject *o1 = PyObject_CallFunction(p_set_event, "nO", Py_ssize_t(i), Py_True);
 	PyObject *o2 = PyObject_CallFunction(p_main_loop, "");
 	PyErr_Print();
 	Py_XDECREF(o1);

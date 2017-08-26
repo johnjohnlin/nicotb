@@ -17,7 +17,7 @@
 
 from nicotb import *
 from nicotb.primitives import JoinableFork
-from nicotb.bus import OneWire
+from nicotb.protocol import OneWire
 import numpy as np
 
 N = 10
@@ -27,13 +27,6 @@ def main():
 		for i in range(n):
 			v[0][0] = i
 			yield v
-	rs_ev = GetEventIdx("rst")
-	ck_ev = GetEventIdx("clk")
-	dval1_bus = GetBus("dval1")
-	dval2_bus = GetBus("dval2")
-	d1_bus = GetBus("d1")
-	d2_bus = GetBus("d2")
-
 	yield rs_ev
 	master1 = OneWire.Master(dval1_bus, d1_bus, ck_ev, callbacks=[print], A=4)
 	master2 = OneWire.Master(dval2_bus, d2_bus, ck_ev, callbacks=[print], A=4)
@@ -53,16 +46,13 @@ def main():
 			yield ck_ev
 	print("All done")
 
-CreateBuses({
-	"dval1": (("", "dval1", tuple(), None),),
-	"dval2": (("", "dval2", tuple(), None),),
-	"d1":    (("", "d1"   , tuple(), None),),
-	"d2":    (("", "d2"   , tuple(), None),),
-})
-CreateEvents({
-	"clk": "u_cr.clock",
-	"rst": "u_cr.rst_out",
-})
+dval1_bus, dval2_bus, d1_bus, d2_bus = CreateBuses([
+	(("", "dval1", tuple(), None),),
+	(("", "dval2", tuple(), None),),
+	(("", "d1"   , tuple(), None),),
+	(("", "d2"   , tuple(), None),),
+])
+ck_ev, rs_ev = CreateEvents(["u_cr.clock", "u_cr.rst_out"])
 RegisterCoroutines([
 	main(),
 ])

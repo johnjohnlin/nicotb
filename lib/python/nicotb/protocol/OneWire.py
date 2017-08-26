@@ -21,9 +21,9 @@ class Master(Receiver):
 	__slots__ = ["valid", "data", "clk", "A", "B"]
 	def __init__(self, valid: Bus, data: Bus, clk: int, A = 1, B = 5, callbacks = list()):
 		super(Master, self).__init__(callbacks)
-		self.valid = valid
-		self.data = data
-		self.clk = clk
+		self.valid = GetBus(valid)
+		self.data = GetBus(data)
+		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
 		self.valid.SetToNumber()
@@ -68,10 +68,10 @@ class Master(Receiver):
 
 class Slave(Receiver):
 	__slots__ = ["valid", "data"]
-	def __init__(self, data: Bus, valid: int, callbacks = list()):
+	def __init__(self, data, valid, callbacks = list()):
 		super(Slave, self).__init__(callbacks)
-		self.valid = valid
-		self.data = data
+		self.valid = GetEvent(valid)
+		self.data = GetBus(data)
 		Fork(self.Monitor())
 
 	def Monitor(self):

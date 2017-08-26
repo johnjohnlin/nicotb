@@ -19,7 +19,7 @@ from nicotb import *
 class AllEvent(object):
 	def __init__(self, events):
 		raise NotImplementedError()
-		self._event = CreateAnonymousEvent()
+		self._event = CreateEvent()
 		self.events = events
 
 	@property
@@ -34,15 +34,15 @@ class AllEvent(object):
 		yield event
 		events.discard(event)
 		if not events:
-			SetEvent(trigger_on_fin)
+			SignalEvent(trigger_on_fin)
 
 	def Destroy(self):
-		DestroyAnonymousEvent(self._event)
+		DestroyEvent(self._event)
 
 class AnyEvent(object):
 	def __init__(self, events):
 		raise NotImplementedError()
-		self._event = CreateAnonymousEvent()
+		self._event = CreateEvent()
 		self.events = events
 
 	@property
@@ -57,16 +57,16 @@ class AnyEvent(object):
 		yield event
 		if flag:
 			flag.clear()
-			SetEvent(trigger_on_fin)
+			SignalEvent(trigger_on_fin)
 
 	def Destroy(self):
-		DestroyAnonymousEvent(self._event)
+		DestroyEvent(self._event)
 
 class JoinableFork(object):
 	__slots__ = ("fin", "coro", "_event")
 	def __init__(self, coro):
 		self.fin = False
-		self._event = CreateAnonymousEvent()
+		self._event = CreateEvent()
 		self.coro = coro
 		Fork(self._wrap())
 
@@ -76,16 +76,16 @@ class JoinableFork(object):
 	def _wrap(self):
 		yield from self.coro
 		self.fin = True
-		SetEvent(self._event)
+		SignalEvent(self._event)
 
 	def Destroy(self):
-		DestroyAnonymousEvent(self._event)
+		DestroyEvent(self._event)
 
 class Lock(object):
 	__slots__ = ("locked", "_event")
 	def __init__(self, locked=False):
 		self.locked = locked
-		self._event = CreateAnonymousEvent()
+		self._event = CreateEvent()
 
 	@property
 	def acquire(self):
@@ -97,10 +97,10 @@ class Lock(object):
 
 	def Release(self):
 		self.locked = False
-		SetEvent(self._event)
+		SignalEvent(self._event)
 
 	def Destroy(self):
-		DestroyAnonymousEvent(self._event)
+		DestroyEvent(self._event)
 
 class Semaphore(object):
 	__slots__ = ("n_max", "n", "_acq_event", "_rel_event")
@@ -110,20 +110,20 @@ class Semaphore(object):
 			self.n = 0 if n_max <= 0 else n_max
 		else:
 			self.n = n
-		self._acq_event = CreateAnonymousEvent()
-		self._rel_event = CreateAnonymousEvent()
+		self._acq_event = CreateEvent()
+		self._rel_event = CreateEvent()
 
 	def Acquire(self, n=1):
 		while self.n < n:
 			yield self._rel_event
 		self.n -= n
-		SetEvent(self._acq_event)
+		SignalEvent(self._acq_event)
 
 	def Release(self, n=1):
 		while self.n_max > 0 and self.n+n > self.n_max:
 			yield self._acq_event
 		self.n += n
-		SetEvent(self._rel_event)
+		SignalEvent(self._rel_event)
 
 	@property
 	def can_acquire(self, n=1):
@@ -134,5 +134,5 @@ class Semaphore(object):
 		return self.n_max <= 0 or self.n+n <= self.n_max
 
 	def Destroy(self):
-		DestroyAnonymousEvent(self._acq_event)
-		DestroyAnonymousEvent(self._rel_event)
+		DestroyEvent(self._acq_event)
+		DestroyEvent(self._rel_event)

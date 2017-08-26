@@ -17,26 +17,18 @@
 
 from nicotb import *
 from nicotb.utils import Scoreboard, Stacker
-from nicotb.bus import TwoWire
+from nicotb.protocol import TwoWire
 import numpy as np
 from itertools import repeat
 
 def main():
 	N = 7
-	ck_ev = GetEventIdx("clk")
-	iack_ev = GetEventIdx("iack")
-	ordy_ev = GetEventIdx("ordy")
-	irdy_bus    = GetBus("irdy"   )
-	ocanack_bus = GetBus("ocanack")
-	i_bus       = GetBus("i"      )
-	o_bus       = GetBus("o"      )
-	f_bus       = GetBus("f"      )
 	scb = Scoreboard()
 	test = scb.GetTest("test")
 	st = Stacker(N+1, [test.Get])
 	golden = np.arange(N+1, dtype=np.int32)[:,np.newaxis]
 	test.Expect((golden,))
-	yield "rst_out"
+	yield rst_out_ev
 
 	master = TwoWire.Master(irdy_bus, i_bus, iack_ev, ck_ev)
 	slave = TwoWire.Slave(ocanack_bus, o_bus, ordy_ev, callbacks=[st.Get])
@@ -51,19 +43,19 @@ def main():
 	f_bus.value[0] = 1
 	f_bus.Write()
 
-CreateBuses({
-	"irdy":    ((""   , "irdy"   , tuple(), None),),
-	"ocanack": ((""   , "can_ack", tuple(), None),),
-	"i":       ((""   , "iint"   , tuple(), None),),
-	"o":       ((""   , "oint"   , tuple(), None),),
-	"f":       (("u_f", "fin"    , tuple(), None),),
-})
-CreateEvents({
-	"rst_out": "u_cs.rst_out",
-	"clk":     "u_cs.clock",
-	"iack":    "u_d0.detected",
-	"ordy":    "u_d1.detected",
-})
+irdy_bus, ocanack_bus, i_bus, o_bus, f_bus = CreateBuses([
+	((""   , "irdy"   , tuple(), None),),
+	((""   , "can_ack", tuple(), None),),
+	((""   , "iint"   , tuple(), None),),
+	((""   , "oint"   , tuple(), None),),
+	(("u_f", "fin"    , tuple(), None),),
+])
+rst_out_ev, ck_ev, iack_ev, ordy_ev = CreateEvents([
+	"u_cs.rst_out",
+	"u_cs.clock",
+	"u_d0.detected",
+	"u_d1.detected",
+])
 RegisterCoroutines([
 	main(),
 ])

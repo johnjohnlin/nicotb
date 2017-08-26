@@ -18,25 +18,23 @@
 from nicotb import *
 import numpy as np
 
-def rst_out():
+def rst_out_cb1():
 	print("reset wait")
-	yield "rst_out"
+	yield rst_out
 	print("reset out")
-	yield "rst_out"
+	yield rst_out
 	print("this should not happen")
 
-def rst_out2():
-	yield "rst_out"
+def rst_out_cb2():
+	yield rst_out
 	print("reset out 2")
 
-def clk():
-	abus = GetBus("a")
-	cbbus = GetBus("cb")
+def clk_cb():
 	cbbus.SetToX()
 	cbbus[0].x[1,1] = 0
-	yield "rst_out"
+	yield rst_out
 	while True:
-		yield "clk"
+		yield clk
 		abus.Read()
 		if abus.is_number:
 			cbbus[0].value[1,1] = abus[0].value[0]
@@ -44,21 +42,19 @@ def clk():
 			cbbus.SetToX()
 		cbbus.Write()
 
-CreateBuses({
-	"cb": (
+cbbus, abus = CreateBuses([
+	(
 		("", "c", (2,4), None),
 		(None, "b", (3,2,4), None),
 	),
-	"a": (
+	(
 		("", "a", tuple(), np.int16),
 	),
-})
-CreateEvents({
-	"rst_out": "u_cs.rst_out",
-	"clk":     "u_cs.clock",
-})
+])
+rst_out, clk = CreateEvents(["u_cs.rst_out", "u_cs.clock"])
+
 RegisterCoroutines([
-	clk(),
-	rst_out(),
-	rst_out2(),
+	clk_cb(),
+	rst_out_cb1(),
+	rst_out_cb2(),
 ])

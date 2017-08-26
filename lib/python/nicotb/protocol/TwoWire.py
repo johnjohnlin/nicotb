@@ -19,12 +19,12 @@ from nicotb.utils import RandProb
 
 class Master(Receiver):
 	__slots__ = ["rdy", "data", "ack", "clk", "A", "B"]
-	def __init__(self, rdy: Bus, data: Bus, ack: int, clk: int, A = 1, B = 5, callbacks=list()):
+	def __init__(self, rdy, data, ack, clk, A = 1, B = 5, callbacks=list()):
 		super(Master, self).__init__(callbacks)
-		self.rdy = rdy
-		self.data = data
-		self.ack = ack
-		self.clk = clk
+		self.rdy = GetBus(rdy)
+		self.data = GetBus(data)
+		self.ack = GetEvent(ack)
+		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
 		self.rdy.value[0] = 0
@@ -69,11 +69,11 @@ class Master(Receiver):
 
 class Slave(Receiver):
 	__slots__ = ["can_ack", "data", "rdy", "clk", "A", "B"]
-	def __init__(self, can_ack: Bus, data: Bus, rdy: int, A = 1, B = 5, callbacks=list()):
+	def __init__(self, can_ack, data, rdy, A = 1, B = 5, callbacks=list()):
 		super(Slave, self).__init__(callbacks)
-		self.can_ack = can_ack
-		self.data = data
-		self.rdy = rdy
+		self.can_ack = GetBus(can_ack)
+		self.data = GetBus(data)
+		self.rdy = GetEvent(rdy)
 		self.A = A
 		self.B = B
 		self.can_ack.value[0] = RandProb(self.A, self.B)
