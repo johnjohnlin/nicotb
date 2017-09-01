@@ -55,7 +55,9 @@ class Master(Receiver):
 		self._X()
 		yield self.clk
 
-	def Send(self, data):
+	def Send(self, data, imm=True):
+		while not (imm or RandProb(self.A, self.B)):
+			yield self.clk
 		self._D(data)
 		yield self.clk
 		super(Master, self).Get(data)
@@ -67,15 +69,18 @@ class Master(Receiver):
 		return self.data.values
 
 class Slave(Receiver):
-	__slots__ = ["valid", "data"]
-	def __init__(self, data, valid, callbacks = list()):
+	__slots__ = ["valid", "data", "clk"]
+	def __init__(self, valid: Bus, data: Bus, clk: int, callbacks = list()):
 		super(Slave, self).__init__(callbacks)
-		self.valid = GetEvent(valid)
+		self.valid = GetBus(valid)
 		self.data = GetBus(data)
+		self.clk = clk
 		Fork(self.Monitor())
 
 	def Monitor(self):
 		while True:
-			yield self.valid
+			yield self.clk
+			self.valid.Read()
 			self.data.Read()
-			super(Slave, self).Get(self.data)
+			if self.valid.value[0] != 0:
+				super(Slave, self).Get(self.data)

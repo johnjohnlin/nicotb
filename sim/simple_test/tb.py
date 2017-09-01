@@ -44,14 +44,12 @@ def clk_cb():
 
 cbbus, abus = CreateBuses([
 	(
-		("", "c", (2,4), None),
-		(None, "b", (3,2,4), None),
+		(""  , "c", (2,4)),
+		(None, "b", (3,2,4)),
 	),
-	(
-		("", "a", tuple(), np.int16),
-	),
+	("a",),
 ])
-rst_out, clk = CreateEvents(["u_cs.rst_out", "u_cs.clock"])
+rst_out, clk = CreateEvents(["rst_out", "ck_ev"])
 
 RegisterCoroutines([
 	clk_cb(),

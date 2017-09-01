@@ -15,29 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
-module ClockedSignal(input clk, input rst);
-integer rst_in = -1;
-integer rst_out = -1;
-integer clock = -1;
-always @(negedge rst) if($NicotbTriggerEvent(rst_in)) $finish;
-always @(posedge rst) if($NicotbTriggerEvent(rst_out)) $finish;
-always @(posedge clk) if (rst) if($NicotbTriggerEvent(clock)) $finish;
-endmodule
-
-module LevelDetect(input clk, input rst, input level);
-parameter bit LEVEL = 1;
-integer detected = -1;
-always @(posedge clk or negedge rst) begin
-	if (rst && level == LEVEL) begin
-		if($NicotbTriggerEvent(detected)) $finish;
+`define Pos(name, sig) \
+	integer name = -1; \
+	always @(posedge sig) if($NicotbTriggerEvent(name)) $finish;
+`define Neg(name, sig) \
+	integer name = -1; \
+	always @(negedge sig) if($NicotbTriggerEvent(name)) $finish;
+`define PosIf(name, sig, cond) \
+	integer name = -1; \
+	always @(posedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish;
+`define NegIf(name, sig, cond) \
+	integer name = -1; \
+	always @(negedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish;
+`define WithFinish \
+	logic nicotb_fin_wire; \
+	initial begin \
+		nicotb_fin_wire = 0; \
+		@(posedge nicotb_fin_wire) \
+		$NicotbFinal; \
+		$finish; \
 	end
-end
-endmodule
-
-module Finish(input fin);
-initial begin
-	@(posedge fin)
-	$NicotbFinal;
-	$finish;
-end
-endmodule

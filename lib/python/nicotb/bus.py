@@ -158,8 +158,23 @@ class Bus(object):
 	def is_number(self):
 		return all(s.is_number for s in self.signals)
 
-def CreateBus(signals: Tuple[Tuple[Union[None, str], str, Tuple[int,...], Any]]):
+def _ConvertSignal(signal):
+	if isinstance(signal, str):
+		return (None, signal, tuple(), np.int32)
+	else:
+		l = len(signal)
+		if l == 1:
+			return (None, signal[0], tuple(), np.int32)
+		if l == 2:
+			return signal + (tuple(), np.int32)
+		if l == 3:
+			return signal + (np.int32,)
+		if l == 4:
+			return signal
+
+def CreateBus(signals):
 	n = len(buses)
+	signals = tuple(_ConvertSignal(signal) for signal in signals)
 	# Create numpy arrays
 	_CreateTup = lambda: tuple(
 		np.zeros(

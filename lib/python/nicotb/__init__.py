@@ -35,6 +35,7 @@ __all__ = [
 	"RegisterCoroutines",
 	"Receiver",
 	"MainLoop",
+	"FinishSim",
 ]
 
 class Receiver(object):
@@ -75,3 +76,8 @@ def MainLoop():
 		else:
 			proc = [waiting_coro.pop()]
 		RegisterCoroutines(proc)
+
+def FinishSim():
+	fin_bus = CreateBus(("nicotb_fin_wire",))
+	fin_bus.value[0] = 0
+	fin_bus.Write()

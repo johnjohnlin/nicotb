@@ -6,5 +6,5 @@ IRUN=/opt/CAD/INCISIV/cur/tools.lnx86/bin/64bit/irun
 	TEST=$(if $(TEST),$(TEST),$@) \
 	TOPMODULE=$(if $(TOPMODULE),$(TOPMODULE),$@) \
 	PYTHONPATH=$(NICOTB)/python:`pwd` \
-	$(IRUN) +access+rw -loadvpi $(NICOTB)/cpp/nicotb.so:VpiBoot -incdir $(NICOTB)/verilog $<
+	$(IRUN) +access+rw -loadvpi $(NICOTB)/cpp/nicotb.so:VpiBoot $(NICOTB)/verilog/Utils.sv $<
 

@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "Utils.sv"
 `include "sm_dut.sv"
 module sm;
 
 logic clk, rst;
 logic i_dval, o_dval;
+`Pos(rst_out, rst)
+`PosIf(ck_ev, clk, rst)
 
 always #1 clk = ~clk;
 initial begin
@@ -36,8 +37,6 @@ initial begin
 	$finish;
 end
 
-ClockedSignal u_cr(clk, rst);
-LevelDetect u_ldo(clk, rst, o_dval);
 sm_dut u_dut(.clk(clk), .rst(rst), .i_dval(i_dval), .i(), .o_dval(o_dval), .o());
 
 endmodule
