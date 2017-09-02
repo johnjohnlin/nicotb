@@ -125,6 +125,16 @@ class Semaphore(object):
 		self.n += n
 		SignalEvent(self._rel_event)
 
+	def AcquireNB(self, n=1):
+		assert self.can_acquire
+		self.n -= n
+		SignalEvent(self._acq_event)
+
+	def ReleaseNB(self, n=1):
+		assert self.can_release
+		self.n += n
+		SignalEvent(self._rel_event)
+
 	@property
 	def can_acquire(self, n=1):
 		return self.n >= n
