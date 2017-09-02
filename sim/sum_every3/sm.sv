@@ -20,8 +20,8 @@ module sm;
 
 logic clk, rst;
 logic i_dval, o_dval;
-`Pos(rst_out, rst)
-`PosIf(ck_ev, clk, rst)
+`Pos(rst_out, rst);
+`PosIf(ck_ev, clk, rst);
 
 always #1 clk = ~clk;
 initial begin

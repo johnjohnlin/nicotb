@@ -18,12 +18,15 @@ from nicotb import *
 from nicotb.utils import RandProb
 
 class Master(Receiver):
-	__slots__ = ["rdy", "data", "ack", "clk", "A", "B"]
-	def __init__(self, rdy, data, ack, clk, A = 1, B = 5, callbacks=list()):
+	__slots__ = ["rdy", "ack", "data", "clk", "A", "B"]
+	def __init__(
+		self, rdy: Bus, ack: Bus, data: Bus,
+		clk: int, A=1, B=5, callbacks=list()
+	):
 		super(Master, self).__init__(callbacks)
 		self.rdy = GetBus(rdy)
+		self.ack = GetBus(ack)
 		self.data = GetBus(data)
-		self.ack = GetEvent(ack)
 		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
@@ -46,7 +49,11 @@ class Master(Receiver):
 	def SendIter(self, it):
 		for data in it:
 			self._D(data)
-			yield self.ack
+			while True:
+				yield self.clk
+				self.ack.Read()
+				if self.ack.x[0] == 0 and self.ack.value[0] != 0:
+					break
 			super(Master, self).Get(data)
 			if not RandProb(self.A, self.B):
 				self._X()
@@ -56,9 +63,15 @@ class Master(Receiver):
 		self._X()
 		yield self.clk
 
-	def Send(self, data):
+	def Send(self, data, imm=True):
+		while not (imm or RandProb(self.A, self.B)):
+			yield self.clk
 		self._D(data)
-		yield self.ack
+		while True:
+			yield self.clk
+			self.ack.Read()
+			if self.ack.x[0] == 0 and self.ack.value[0] != 0:
+				break
 		super(Master, self).Get(data)
 		self._X()
 		yield self.clk
@@ -68,23 +81,30 @@ class Master(Receiver):
 		return self.data.values
 
 class Slave(Receiver):
-	__slots__ = ["can_ack", "data", "rdy", "clk", "A", "B"]
-	def __init__(self, can_ack, data, rdy, A = 1, B = 5, callbacks=list()):
+	__slots__ = ["rdy", "ack", "data", "clk", "A", "B"]
+	def __init__(
+		self, rdy: Bus, ack: Bus, data: Bus,
+		clk: int, A=1, B=5, callbacks=list()
+	):
 		super(Slave, self).__init__(callbacks)
-		self.can_ack = GetBus(can_ack)
+		self.rdy = GetBus(rdy)
+		self.ack = GetBus(ack)
 		self.data = GetBus(data)
-		self.rdy = GetEvent(rdy)
+		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
-		self.can_ack.value[0] = RandProb(self.A, self.B)
-		self.can_ack.Write()
+		self.ack.value[0] = RandProb(self.A, self.B)
+		self.ack.Write()
 		Fork(self.Monitor())
 
 	def Monitor(self):
 		while True:
-			yield self.rdy
-			if self.can_ack.value[0]:
+			yield self.clk
+			self.rdy.Read()
+			if self.rdy.x[0] != 0 or self.rdy.value[0] == 0:
+				continue
+			if self.ack.value[0] != 0:
 				self.data.Read()
 				super(Slave, self).Get(self.data)
-			self.can_ack.value[0] = RandProb(self.A, self.B)
-			self.can_ack.Write()
+			self.ack.value[0] = RandProb(self.A, self.B)
+			self.ack.Write()

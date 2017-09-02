@@ -44,7 +44,7 @@ def f2():
 		yield from sem.Acquire(i)
 		print(f"Acq {sem.n}")
 
-clk_ev = CreateEvent("u_cs.clock")
+clk_ev = CreateEvent("ck_ev")
 cnt = 0
 sem = Semaphore(-1)
 RegisterCoroutines([

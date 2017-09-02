@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "Utils.sv"
 `include "cnt_dut.sv"
 
 module cnt;
@@ -23,7 +22,10 @@ module cnt;
 logic clk, rst;
 logic [10:0] iint, oint;
 logic irdy, iack;
-logic ordy, oack, can_ack;
+logic ordy, oack, ocanack;
+`Pos(rst_out, rst)
+`PosIf(ck_ev, clk, rst)
+`WithFinish
 
 always #1 clk = ~clk;
 initial begin
@@ -39,11 +41,7 @@ initial begin
 	$finish;
 end
 
-ClockedSignal u_cs(clk, rst);
-LevelDetect u_d0(clk,rst,iack);
-LevelDetect u_d1(clk,rst,ordy);
-Finish u_f();
-assign oack = ordy && can_ack;
+assign oack = ordy && ocanack;
 Dut dut(clk,rst,irdy,iack,iint,ordy,oack,oint);
 
 endmodule

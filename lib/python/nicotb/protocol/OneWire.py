@@ -82,5 +82,5 @@ class Slave(Receiver):
 			yield self.clk
 			self.valid.Read()
 			self.data.Read()
-			if self.valid.value[0] != 0:
+			if self.valid.x[0] == 0 and self.valid.value[0] != 0:
 				super(Slave, self).Get(self.data)

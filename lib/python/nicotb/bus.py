@@ -119,15 +119,15 @@ class Bus(object):
 
 	@value.setter
 	def value(self, value):
-		self.signals.value = value
+		self.signals[0].value = value
 
 	@property
 	def x(self) -> np.ndarray:
-		return self._xs
+		return self._xs[0]
 
 	@x.setter
 	def x(self, x):
-		self.signals.x = x
+		self.signals[0].x = x
 
 	@property
 	def signal(self) -> Signal:

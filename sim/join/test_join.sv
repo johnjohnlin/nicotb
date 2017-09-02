@@ -15,13 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "Utils.sv"
 
 module test_join;
 
 logic clk, rst;
 logic dval1, dval2;
 logic [10:0] d1, d2;
+`Pos(rst_out, rst)
+`PosIf(ck_ev, clk, rst)
 
 always #1 clk = ~clk;
 initial begin
@@ -36,9 +37,5 @@ initial begin
 	$NicotbFinal;
 	$finish;
 end
-
-ClockedSignal u_cr(clk, rst);
-LevelDetect u_ldo1(clk, rst, dval1);
-LevelDetect u_ldo2(clk, rst, dval2);
 
 endmodule

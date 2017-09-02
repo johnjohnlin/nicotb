@@ -79,5 +79,5 @@ def MainLoop():
 
 def FinishSim():
 	fin_bus = CreateBus(("nicotb_fin_wire",))
-	fin_bus.value[0] = 0
+	fin_bus.value[0] = 1
 	fin_bus.Write()

@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "Utils.sv"
 
 module tb;
 
 logic clk, rst;
 logic vs, hs;
 integer d;
-ClockedSignal u_cs(clk, rst);
+`Pos(rst_out, rst)
+`PosIf(ck_ev, clk, rst)
 
 always #1 clk = ~clk;
 initial begin

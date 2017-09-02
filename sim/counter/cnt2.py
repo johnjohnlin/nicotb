@@ -32,8 +32,8 @@ def main():
 	test.Expect((golden,))
 	yield rst_out_ev
 
-	master = TwoWire.Master(irdy_bus, i_bus, iack_ev, ck_ev)
-	slave = TwoWire.Slave(ocanack_bus, o_bus, ordy_ev, callbacks=[st.Get])
+	master = TwoWire.Master(irdy, iack, i, ck_ev)
+	slave = TwoWire.Slave(ordy, oack, o, ck_ev, callbacks=[st.Get])
 
 	values = master.values
 	def it():
@@ -45,22 +45,19 @@ def main():
 	# for i in range(100):
 	# 	yield ck_ev
 	yield from repeat(ck_ev, 100)
-	f_bus.value[0] = 1
-	f_bus.Write()
+	FinishSim()
 
-irdy_bus, ocanack_bus, i_bus, o_bus, f_bus = CreateBuses([
-	((""   , "irdy"   , tuple(), None),),
-	((""   , "can_ack", tuple(), None),),
-	((""   , "iint"   , tuple(), None),),
-	((""   , "oint"   , tuple(), None),),
-	(("u_f", "fin"    , tuple(), None),),
+irdy, iack, i = CreateBuses([
+	("irdy",),
+	("iack",),
+	("iint",),
 ])
-rst_out_ev, ck_ev, iack_ev, ordy_ev = CreateEvents([
-	"u_cs.rst_out",
-	"u_cs.clock",
-	"u_d0.detected",
-	"u_d1.detected",
+ordy, oack, o = CreateBuses([
+	("ordy",),
+	("oack",),
+	("oint",),
 ])
+rst_out_ev, ck_ev = CreateEvents(["rst_out", "ck_ev",])
 RegisterCoroutines([
 	main(),
 ])

@@ -47,12 +47,12 @@ def main():
 	print("All done")
 
 dval1_bus, dval2_bus, d1_bus, d2_bus = CreateBuses([
-	(("", "dval1", tuple(), None),),
-	(("", "dval2", tuple(), None),),
-	(("", "d1"   , tuple(), None),),
-	(("", "d2"   , tuple(), None),),
+	("dval1",),
+	("dval2",),
+	("d1"   ,),
+	("d2"   ,),
 ])
-ck_ev, rs_ev = CreateEvents(["u_cr.clock", "u_cr.rst_out"])
+ck_ev, rs_ev = CreateEvents(["ck_ev", "rst_out"])
 RegisterCoroutines([
 	main(),
 ])

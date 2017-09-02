@@ -29,11 +29,11 @@ def cb():
 	yield clk
 
 vs, hs, d = CreateBuses([
-	(("", "vs", tuple(), None),),
-	(("", "hs", tuple(), None),),
-	(("", "d" , tuple(), None),),
+	("vs",),
+	("hs",),
+	("d" ,),
 ])
-rst_out, clk = CreateEvents(["u_cs.rst_out", "u_cs.clock"])
+rst_out, clk = CreateEvents(["rst_out", "ck_ev"])
 
 RegisterCoroutines([
 	cb(),
