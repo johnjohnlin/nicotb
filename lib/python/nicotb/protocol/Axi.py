@@ -34,16 +34,16 @@ class MasterLite(object):
 		clk = GetEvent(clk)
 		self.clk = clk
 		self.sem = Semaphore(-1)
-		self.aw = TwoWire.Master(aw_rdy, aw_ack, aw, clk, callbacks=[self.sem.ReleaseNB])
-		self.w  = TwoWire.Master(w_rdy , w_ack , w , clk, callbacks=[self.sem.ReleaseNB])
+		self.aw = TwoWire.Master(aw_rdy, aw_ack, aw, clk, callbacks=[lambda x: self.sem.ReleaseNB()])
+		self.w  = TwoWire.Master(w_rdy , w_ack , w , clk, callbacks=[lambda x: self.sem.ReleaseNB()])
 		self.b  = TwoWire.Slave (b_rdy , b_ack , b , clk, callbacks=[self._NoErr])
 		self.ar = TwoWire.Master(ar_rdy, ar_ack, ar, clk)
 		self.r  = TwoWire.Slave (r_rdy , r_ack , r , clk, callbacks=read_callbacks)
 		self.writing = False
 
-	def _NoErr(self, values):
+	def _NoErr(self, resp):
 		assert self.writing, "Premature write reponse"
-		assert values[0][0] == 0, "Must get OKAY response 0b00"
+		assert resp.value[0] == 0, "Must get OKAY response 0b00"
 		self.writing = False
 		self.sem.ReleaseNB()
 
@@ -56,5 +56,5 @@ class MasterLite(object):
 		yield from self.sem.Acquire(3)
 
 	def Read(self, a):
-		self.r.value[0] = a
-		yield from self.r.Send(self.r.values)
+		self.ar.data.value[0] = a
+		yield from self.ar.Send(self.ar.values)

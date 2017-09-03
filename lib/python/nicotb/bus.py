@@ -64,6 +64,9 @@ class Signal(object):
 	def is_number(self):
 		return not np.any(self._x)
 
+	def __str__(self):
+		return str(self._value) if self.is_number else "X"
+
 class Bus(object):
 	"""
 	A wrapper that keeps a bus with its reference and provide accessor.
@@ -157,6 +160,10 @@ class Bus(object):
 	@property
 	def is_number(self):
 		return all(s.is_number for s in self.signals)
+
+	def __str__(self):
+		s = ",".join(str(s) for s in self.signals)
+		return "Bus <{}>".format(s)
 
 def _ConvertSignal(signal):
 	if isinstance(signal, str):

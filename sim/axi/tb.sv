@@ -16,6 +16,16 @@
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
 
+module Stage(input clk, input rst, input irdy, output iack, output iboth, output logic ordy, input oack);
+assign iack = oack || !ordy;
+assign iboth = irdy && iack;
+always_ff @(posedge clk or negedge rst) if (!rst) begin
+	ordy <= 0;
+end else begin
+	ordy <= irdy || ordy && !oack;
+end
+endmodule
+
 module tb;
 
 logic clk, rst;
@@ -31,7 +41,6 @@ logic [31:0] r ;
 
 always #1 clk = ~clk;
 assign b = 0;
-assign r = 123;
 initial begin
 	$fsdbDumpfile("axi.fsdb");
 	$fsdbDumpvars(0, tb, "+mda");
@@ -43,6 +52,60 @@ initial begin
 	#1000 $display("Timeout");
 	$NicotbFinal();
 	$finish;
+end
+
+logic awboth;
+logic wboth ;
+logic bboth ;
+logic arboth;
+logic rboth ;
+logic aw_got;
+logic w_got;
+logic bsrc_rdy;
+logic bsrc_ack;
+logic rsrc_rdy;
+logic rsrc_ack;
+logic [ 5:0] aw_r;
+logic [31:0] w_r ;
+logic [ 5:0] ar_r;
+logic [31:0] internal_buf [8];
+assign bsrc_rdy = aw_got && w_got;
+Stage u_st_aw(clk, rst, aw_rdy, aw_ack, awboth, aw_got, bboth);
+Stage u_st_w (clk, rst, w_rdy , w_ack , wboth , w_got , bboth);
+Stage u_st_b (clk, rst, bsrc_rdy, bsrc_ack, bboth, b_rdy, b_ack);
+Stage u_st_ar(clk, rst, ar_rdy, ar_ack, arboth, rsrc_rdy, rsrc_ack);
+Stage u_st_r (clk, rst, rsrc_rdy, rsrc_ack, rboth, r_rdy, r_ack);
+
+always @(posedge clk or negedge rst) if (!rst) begin
+	aw_r <= 0;
+end else if (awboth) begin
+	aw_r <= aw;
+end
+
+always @(posedge clk or negedge rst) if (!rst) begin
+	w_r <= 0;
+end else if (wboth) begin
+	w_r <= w;
+end
+
+always @(posedge clk or negedge rst) if (!rst) begin
+	for (int i = 0; i < 8; i++) begin
+		internal_buf[i] <= 0;
+	end
+end else if (bboth) begin
+	internal_buf[aw_r] <= w_r;
+end
+
+always @(posedge clk or negedge rst) if (!rst) begin
+	ar_r <= 0;
+end else if (arboth) begin
+	ar_r <= ar;
+end
+
+always @(posedge clk or negedge rst) if (!rst) begin
+	r <= 0;
+end else if (rboth) begin
+	r <= internal_buf[ar_r];
 end
 
 endmodule

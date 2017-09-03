@@ -36,14 +36,20 @@ def main():
 		("r_rdy",),
 		("r_ack",),
 		("r",),
-		ck_ev
+		ck_ev,
+		read_callbacks=[print]
 	)
 	yield rst_out
 	yield ck_ev
 
+	yield from master.Write(0, 2)
+	yield from master.Write(1, 5)
 	yield from master.Write(4, 3)
+	yield from master.Read(4)
+	yield from master.Read(0)
+	yield from master.Read(1)
 
-	for i in range(10):
+	for i in range(100):
 		yield ck_ev
 	FinishSim()
 
