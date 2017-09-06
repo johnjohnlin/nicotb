@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
+// FIXME: #0 is a very bad workaround
 `define Pos(name, sig) \
 	integer name = -1; \
 	always @(posedge sig) #0 if($NicotbTriggerEvent(name)) $finish;
@@ -23,10 +24,10 @@
 	always @(negedge sig) #0 if($NicotbTriggerEvent(name)) $finish;
 `define PosIf(name, sig, cond) \
 	integer name = -1; \
-	always @(posedge sig) #0 if ((cond) && $NicotbTriggerEvent(name)) $finish;
+	always @(posedge sig) #0 if (cond) #0 if ($NicotbTriggerEvent(name)) $finish;
 `define NegIf(name, sig, cond) \
 	integer name = -1; \
-	always @(negedge sig) #0 if ((cond) && $NicotbTriggerEvent(name)) $finish;
+	always @(negedge sig) #0 if (!(cond)) #0 if ($NicotbTriggerEvent(name)) $finish;
 `define WithFinish \
 	logic nicotb_fin_wire; \
 	initial begin \

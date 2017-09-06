@@ -26,8 +26,8 @@ class Master(Receiver):
 		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
-		self.valid.SetToNumber()
-		self.data.SetToNumber()
+		self.valid.value[0] = 0
+		self.valid.Write()
 
 	def _D(self, data):
 		self.valid.value[0] = 1
