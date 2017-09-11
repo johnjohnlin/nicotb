@@ -37,6 +37,9 @@ class Scoreboard(object):
 			return ret
 
 	def Report(self):
+		if len(self.tests) == 0:
+			print("Nothing to report in this scoreboard")
+			return
 		fail = False
 		for t in self.tests.values():
 			if not t.is_clean:
@@ -47,12 +50,12 @@ class Scoreboard(object):
 			if t.err != 0:
 				"There are {} errors in [{}]".format(t.err, t.name)
 				fail = True
-		print("Status of [{}]: {}, (correct/error): {}/{}".format(
-			t.name,
-			"FAIL" if fail else "PASS",
-			t.ok,
-			t.err,
-		))
+			print("Status of [{}]: (correct/error): {}/{}".format(
+				t.name,
+				t.ok,
+				t.err,
+			))
+		print("FAIL" if fail else "PASS")
 
 	@classmethod
 	def ReportAll(cls):
