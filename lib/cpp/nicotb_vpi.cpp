@@ -49,7 +49,7 @@ namespace Python {
 		CHECK_EQ(PyArray_SIZE(p_v), PyArray_SIZE(p_x)) << "Array size mismatch";\
 		CHECK_LE(PyArray_SIZE(p_v), handles.end()-it) << "No enough Verilog signal left";\
 		if (PyArray_SIZE(p_v) == 0) {\
-			LOG(ERROR) << "Ignore zero-sized array";\
+			LOG(WARNING) << "Ignore zero-sized array";\
 			continue;\
 		}\
 		PyArrayObject *op[2]{p_v, p_x};\
