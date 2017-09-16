@@ -80,7 +80,7 @@ class Tester(object):
 
 	def Get(self, x):
 		assert len(self.exp) != 0, "{} does not expect anything".format(self.name)
-		head = self.exp.pop()
+		head = self.exp.popleft()
 		if any(not np.array_equal(a,b) for a, b in zip(head, x)):
 			print(self.formator(head, x))
 			assert self.err < self.max_err, "Tester [{}] has reached the max error count".format(self.name)
