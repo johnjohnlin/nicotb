@@ -87,6 +87,7 @@ class Bus(object):
 	which is useful when the bus has only 1 signal.
 	Using these shortcuts, only (1-2), (2-1) and (2-2) is available.
 	"""
+	_write_pend = set()
 	__slots__ = ["idx", "_vs", "_xs", "signals"]
 	def __init__(self, idx, vs, xs):
 		self.idx = idx
@@ -142,8 +143,17 @@ class Bus(object):
 	def Read(self):
 		ReadBus(self.idx, self._vs, self._xs)
 
-	def Write(self):
-		WriteBus(self.idx, self._vs, self._xs)
+	def Write(self, imm=False):
+		if imm:
+			WriteBus(self.idx, self._vs, self._xs)
+		else:
+			Bus._write_pend.add(self)
+
+	@staticmethod
+	def FlushWrite():
+		for s in Bus._write_pend:
+			s.Write(True)
+		Bus._write_pend.clear()
 
 	def SetToZ(self):
 		for s in self.signals:

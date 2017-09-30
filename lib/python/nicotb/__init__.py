@@ -66,8 +66,6 @@ def RegisterCoroutines(coro: list):
 		Fork(c)
 
 def MainLoop():
-	# Event.event_queue
-	# Event.waiting_coro
 	while len(event_queue) != 0:
 		event_idx, all_ev = event_queue.pop()
 		if all_ev:
@@ -76,6 +74,7 @@ def MainLoop():
 		else:
 			proc = [waiting_coro.pop()]
 		RegisterCoroutines(proc)
+	Bus.FlushWrite()
 
 def FinishSim():
 	fin_bus = CreateBus(("nicotb_fin_wire",))
