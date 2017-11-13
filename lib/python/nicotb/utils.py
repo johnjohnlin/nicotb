@@ -60,7 +60,7 @@ class Scoreboard(object):
 					last_update=?, finished=?, passed=? WHERE id=?
 				""", (datetime.now(), 0, 0, rec[0]))
 			else:
-				cur.execute("INSERT INTO Scoreboard VALUES (?,?,?,?,?)", (None,name, datetime.now(), 0, 0))
+				cur.execute("INSERT INTO Scoreboard VALUES (?,?,?,?,?)", (None, name, datetime.now(), 0, 0))
 			conn.commit()
 			conn.close()
 
@@ -100,8 +100,8 @@ class Scoreboard(object):
 				if rec:
 					cur.execute("""
 						UPDATE Tests SET
-						scoreboard_id=?, name=?, correct=?, wrong=?, pending=? WHERE id=? AND scoreboard_id=?
-					""", (rec_scb[0], t.name, t.ok, t.err, t.exp, rec[0], rec_scb[0]))
+						correct=?, wrong=?, pending=? WHERE id=? AND scoreboard_id=?
+					""", (t.ok, t.err, len(t.exp), rec[0], rec_scb[0]))
 				else:
 					cur.execute("INSERT INTO Tests VALUES (?,?,?,?,?,?)", (None, rec_scb[0], t.name, t.ok, t.err, len(t.exp)))
 		print("FAIL" if fail else "PASS")
