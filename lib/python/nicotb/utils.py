@@ -16,7 +16,8 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import Receiver
 from collections import deque
-from typing import Tuple
+import sqlite3 as sql
+from datetime import datetime
 import numpy as np
 
 def DefaultFormator(expect, get):
@@ -24,9 +25,44 @@ def DefaultFormator(expect, get):
 
 class Scoreboard(object):
 	scoreboards = list()
-	def __init__(self):
+	use_sql = True
+
+	def __init__(self, name=""):
+		self.name = name
 		self.tests = dict()
 		Scoreboard.scoreboards.append(self)
+		if Scoreboard.use_sql:
+			conn = sql.connect("scoreboard.db")
+			cur = conn.cursor()
+			cur.executescript("""
+				CREATE TABLE IF NOT EXISTS Scoreboard (
+					id INTEGER PRIMARY KEY,
+					name TEXT,
+					last_update TIMESTAMP,
+					finished INTEGER,
+					passed INTEGER
+				);
+				CREATE TABLE IF NOT EXISTS Tests (
+					id INTEGER PRIMARY KEY,
+					scoreboard_id INTEGER,
+					name TEXT,
+					correct INTEGER,
+					wrong INTEGER,
+					pending INTEGER,
+					FOREIGN KEY(scoreboard_id) REFERENCES Scoreboard(id)
+				);
+			""")
+			cur.execute("SELECT * FROM Scoreboard WHERE name=?", (self.name,))
+			rec = cur.fetchone()
+			if rec:
+				cur.execute("""
+					UPDATE Scoreboard SET
+					last_update=?, finished=?, passed=? WHERE id=?
+				""", (datetime.now(), 0, 0, rec[0]))
+			else:
+				cur.execute("INSERT INTO Scoreboard VALUES (?,?,?,?,?)", (None,name, datetime.now(), 0, 0))
+			conn.commit()
+			conn.close()
 
 	def GetTest(self, name, max_err=0, formator=DefaultFormator):
 		if name in self.tests:
@@ -36,11 +72,14 @@ class Scoreboard(object):
 			self.tests[name] = ret
 			return ret
 
-	def Report(self):
+	def Report(self, cur):
 		if len(self.tests) == 0:
 			print("Nothing to report in this scoreboard")
 			return
 		fail = False
+		if Scoreboard.use_sql:
+			cur.execute("SELECT * FROM Scoreboard WHERE name=?", (self.name,))
+			rec_scb = cur.fetchone()
 		for t in self.tests.values():
 			if not t.is_clean:
 				print("There are still {} values in expecting queue of [{}]".format(
@@ -55,7 +94,22 @@ class Scoreboard(object):
 				t.ok,
 				t.err,
 			))
+			if Scoreboard.use_sql:
+				cur.execute("SELECT * FROM Tests WHERE name=? AND scoreboard_id=?", (t.name, rec_scb[0]))
+				rec = cur.fetchone()
+				if rec:
+					cur.execute("""
+						UPDATE Tests SET
+						scoreboard_id=?, name=?, correct=?, wrong=?, pending=? WHERE id=? AND scoreboard_id=?
+					""", (rec_scb[0], t.name, t.ok, t.err, t.exp, rec[0], rec_scb[0]))
+				else:
+					cur.execute("INSERT INTO Tests VALUES (?,?,?,?,?,?)", (None, rec_scb[0], t.name, t.ok, t.err, len(t.exp)))
 		print("FAIL" if fail else "PASS")
+		if Scoreboard.use_sql:
+			cur.execute("""
+				UPDATE Scoreboard SET
+				last_update=?, finished=?, passed=? WHERE id=?
+			""", (datetime.now(), 1, not fail, rec_scb[0]))
 
 	@classmethod
 	def ReportAll(cls):
@@ -64,9 +118,17 @@ class Scoreboard(object):
 		print(sep1)
 		print("Scoreboard Reports")
 		print(sep1)
+		if Scoreboard.use_sql:
+			conn = sql.connect("scoreboard.db")
+			cur = conn.cursor()
+		else:
+			cur = None
 		for scb in cls.scoreboards:
-			scb.Report()
+			scb.Report(cur)
 			print(sep2)
+		if Scoreboard.use_sql:
+			conn.commit()
+			conn.close()
 
 class Tester(object):
 	__slots__ = ["exp", "max_err", "name", "err", "ok", "formator"]
