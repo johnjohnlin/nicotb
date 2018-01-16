@@ -54,7 +54,7 @@ irdy, iack, i = CreateBuses([
 ])
 ordy, oack, o = CreateBuses([
 	("ordy",),
-	("oack",),
+	("ocanack",),
 	("oint",),
 ])
 rst_out_ev, ck_ev = CreateEvents(["rst_out", "ck_ev",])
