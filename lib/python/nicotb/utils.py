@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import Receiver
+from nicotb.bus import SignalTuple
 from collections import deque
 import sqlite3 as sql
 from datetime import datetime
@@ -193,7 +194,7 @@ class Stacker(Receiver):
 			dst[self.curn] = src
 		self.curn += 1
 		if self.curn == self.n:
-			super(Stacker, self).Get(tuple(a[:self.curn] for a in self.buf))
+			super(Stacker, self).Get(SignalTuple((a[:self.curn] for a in self.buf), x.values))
 			self.curn = 0
 
 	@property

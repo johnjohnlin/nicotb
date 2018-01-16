@@ -22,6 +22,23 @@ import numpy as np
 
 buses = list()
 
+class SignalTuple(tuple):
+	"Subclass of tuple, for implicit use only."
+	def __new__(cls, t, n2s):
+		return super(SignalTuple, cls).__new__(cls, t)
+
+	def __init__(self, t, n2s):
+		self._n2s = n2s._n2s if isinstance(n2s, SignalTuple) else n2s
+
+	def __getitem__(self, i):
+		return getattr(self, i) if isinstance(i, str) else super(SignalTuple, self).__getitem__(i)
+
+	def __getattr__(self, i):
+		i = self._n2s.get(i)
+		if i is None:
+			raise AttributeError
+		return super(SignalTuple, self).__getitem__(i)
+
 class Signal(object):
 	"A wrapper that keeps a signal in a bus"
 	__slots__ = ["_x", "_value"]
@@ -74,6 +91,12 @@ class Bus(object):
 	(1) self.values[99], self.xs[99]
 	(2) self.signals[99].x, self.signals[99].value
 	(3) self[99].x, self[99].value (Shortcut for (2))
+	(4) self['abc'].x, self['abc'].value (Similar with (3), lookup by wire name.
+	    If multiple wires have the same name (under diffferent modules),
+	    the the name with smaller ID will be overrided.
+	(5) self.abc.x, self.abc.value (__getattr__ version for (4))
+	    Be careful when __getattr__ is called only when default getter fails,
+	    so avoid Python class built-in names, 'idx', 'signals' and names starts with underscore(s).
 	There are many ways to modify the reference:
 	(1-1) self.values[99] = 0 (wrong, "values" is a tuple)
 	(1-2) self.values[99][0] = 123 (modify the element of numpy array directly)
@@ -88,15 +111,18 @@ class Bus(object):
 	Using these shortcuts, only (1-2), (2-1) and (2-2) is available.
 	"""
 	_write_pend = set()
-	__slots__ = ["idx", "_vs", "_xs", "signals"]
+	__slots__ = ["idx", "_vs", "_xs", "_name_2_sig_id", "signals"]
+
 	def __init__(self, idx, vs, xs):
+		# s[1] is the wire name
 		self.idx = idx
 		self._vs = vs
 		self._xs = xs
-		self.signals = tuple(Signal(v, x) for v, x in zip(vs, xs))
+		# copy the name lookup table
+		self.signals = SignalTuple((Signal(v, x) for v, x in zip(vs, xs)), vs)
 
 	@property
-	def values(self) -> Tuple[np.ndarray, ...]:
+	def values(self):
 		"Get the underlying tuple of numpy arrays representing the value(s)"
 		return self._vs
 
@@ -107,7 +133,7 @@ class Bus(object):
 				ss.value = vv
 
 	@property
-	def xs(self) -> Tuple[np.ndarray, ...]:
+	def xs(self):
 		"Get the underlying tuple of numpy arrays representing the X value(s)"
 		return self._xs
 
@@ -138,6 +164,12 @@ class Bus(object):
 		return self.signals[0]
 
 	def __getitem__(self, i):
+		return getattr(self, i) if isinstance(i, str) else self.signals[i]
+
+	def __getattr__(self, i):
+		i = self._name_2_sig_id.get(i)
+		if i is None:
+			raise AttributeError
 		return self.signals[i]
 
 	def Read(self):
@@ -193,11 +225,13 @@ def CreateBus(signals):
 	n = len(buses)
 	signals = tuple(_ConvertSignal(signal) for signal in signals)
 	# Create numpy arrays
-	_CreateTup = lambda: tuple(
-		np.zeros(
+	name_2_sig_id = dict((s[1], i) for i, s in enumerate(signals))
+	_CreateTup = lambda: SignalTuple(
+		(np.zeros(
 			shape=(1,) if len(signal[2]) == 0 else signal[2],
 			dtype=np.int32 if signal[3] is None else signal[3]
-		) for signal in signals
+		) for signal in signals),
+		name_2_sig_id
 	)
 	vtup = _CreateTup()
 	xtup = _CreateTup()

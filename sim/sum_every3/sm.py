@@ -26,7 +26,7 @@ N = 10
 def main():
 	scb = Scoreboard()
 	test1 = scb.GetTest("test1")
-	st = Stacker(N, [test1.Get])
+	st = Stacker(N, [test1.Get, lambda x: print("Print with name: {}".format(x.o))])
 	yield rs_ev
 	yield ck_ev
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
@@ -41,12 +41,12 @@ def main():
 	if ITER:
 		def it():
 			for i in arr:
-				values[0][0] = i
+				values.i[0] = i
 				yield values
 		yield from master.SendIter(it())
 	else:
 		for i in arr:
-			values[0][0] = i
+			values.i[0] = i
 			yield from master.Send(values)
 	for i in range(10):
 		yield ck_ev
