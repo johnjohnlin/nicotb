@@ -111,7 +111,7 @@ class Bus(object):
 	Using these shortcuts, only (1-2), (2-1) and (2-2) is available.
 	"""
 	_write_pend = set()
-	__slots__ = ["idx", "_vs", "_xs", "_name_2_sig_id", "signals"]
+	__slots__ = ["idx", "_vs", "_xs", "signals"]
 
 	def __init__(self, idx, vs, xs):
 		# s[1] is the wire name
@@ -167,7 +167,6 @@ class Bus(object):
 		return getattr(self, i) if isinstance(i, str) else self.signals[i]
 
 	def __getattr__(self, i):
-		i = self._name_2_sig_id.get(i)
 		if i is None:
 			raise AttributeError
 		return self.signals[i]
