@@ -8,24 +8,24 @@ title: Concurrency
 ## Introdution
 
 In hardware simulation asynchronized or concurrent execution are very important,
-since modules in a hardware executes in parallel.
+since modules, or different parts, in a hardware executes in parallel.
 For example, we commonly use `initial` blocks, `fork` and `join` in a SystemVerilog testbench;
 in SystemC, `SC_THREAD`, `SC_METHOD` are used to support concurrency.
 
 The asynchronized or concurrent model appears in many modern languages JS, Golang;
 Python 3.5-3.6 introduces `asyncio` and *co-routine*, which is useful for IO-heavy codes
-However, the built-in API provides less control on the scheduling,
-and we find that it could be hard to use it for SystemVerilog co-simulation,
-so we choose the old friend, the **generator**, as the basis in Nicotb.
-*Generator* is the very primary form of co-routine, it require much text to explain,
+They seems to be a good option for Python-SystemVerilog co-simulation,
+but the built-in API provides less low-level control on the scheduling,
+making it difficult to use it for SystemVerilog co-simulation.
+Therefore, we choose the old friend, the **generator**, as the basis in Nicotb.
+*Generator* is the very primary form of *co-routine*, it require much text to explain,
 but you can find lots of tutorial on the web about it and I will just skip it.
 
 ## Simulate Concurreny with Generators
 
-In the following code segment,
-we show an very simple example that two *generators* are scheduled in the `main_loop()` function,
-as if two thread are executed in parallel, and the they are also synchronized by the `yield`.
-`yield`, even if `f` and `g` is actually executed in sequential.
+To demonstrate concurrent programming with *co-routine*, in the following code segment,
+we show a simple example that two *generators* are scheduled in the `main_loop()` function,
+as if two threads are executed in parallel and synchronized by the `yield`.
 
 ```python
 def f():
@@ -65,14 +65,17 @@ Function f, 4
 Function f finished
 ```
 
+While it seems that `f` and `g` are executed in parallel,
+we should always bear in mind that if `f` and `g` is actually executed in sequential,
+and the concurrency is **simulated** in the `main_loop()`.
+
 ## Events in Nicotb
 
 *Events* is one of the most important parts in concurrency,
 and it also exists as a built-in type in SystemVerilog.
-Actually, implemnting *events* can be very simple,
-an *event* can be as simple as an integer *index*,
-and the new code should `yield` the *event index* for waiting for the *event* to be triggered.
-We simplify the problem that we know the number of *events*, say 4, in advance:
+Actually, implementing *events* can be as simple as constructing integer *indices*.
+In the following code segment, we show a *generator* `yield`s a *event index* it is waiting for.
+For simplicity, we assume that the number of *events*, say 4, is known in advance:
 
 ```python
 def g():
@@ -83,19 +86,21 @@ def g():
 def main_loop(threads, n_event=0):
     # ...
 
+# We have 4 events 0,1,2,3
 main_loop([g()], 4)
 ```
 
-How to implement the event-based scheduling?
+How to implement such event-based scheduling?
 In the previous section we use the built-in `zip_iterator` as a simpler scheduler,
-For supporting *events*, we must implement our own scheduler.
+while for supporting *events*, we must implement our own scheduler.
 Specifically, we maintain a *queue* to hold the pending *events* and a *list* to store which *generator* is waiting for the *event* to be triggered.
 
 The logic of the scheduler is:
 
 1. As long as the *queue* is not empty, pop the *event index* and execute the waiting *generators*.
 1. If the *generator* doesn't terminate,
-   then it yields an *event index* it's waiting for and should be added to the correspoinding *event index*.
+   then it `yield`s an *event index* it's waiting for and should be added to the correspoinding *event index*.
+1. If the *generator* is done, it will throw a `StopIteration`, and we can get rid of it forever.
 1. Whenever an *event* is triggered, it is pushed to the *queue*, and is scheduled in the next time step.
 
 ```python
@@ -173,11 +178,11 @@ Simultaneous threads synchronized by the same events are not guaranteed to be ex
 As long as the time steps are not mixed up, the results are valid.
 
 ### dont\_initialize in SystemC
-A small note is that, some lines are print before "Time step 0".
+You might wonder why some lines are print before "Time step 0".
 If you are familiar with SystemC, you can use a `dont_initialize()` to prevent this before `sc_start()`.
-This can be implemented by adding a pseudo-event called the initizlized event,
-we can allocate one extra event more than the number the user requests,
-and then `yield -1` force the thread to wait on that events.
+This can be implemented by adding a pseudo-*event* called the initialization *event*,
+we can allocate one extra *event* more than the number the user requests,
+and then `yield -1` force the thread to wait on that *events*.
 (Note: we somewhat abuse that `x[-1]` gives the last element in Python.)
 
 ```python
@@ -190,7 +195,7 @@ def main_loop(threads, n_event):
     while event_pending:
 ```
 
-We don't need to modify anything else to support SystemC-like `dont_initialize`.
+We don't need to modify anything else to support SystemC-like `dont_initialize()`.
 Adding `yield -1` at the first line of `f` and `g` gives us:
 
 ```
@@ -205,7 +210,7 @@ g finish
 ```
 
 ## Nested Events
-Nested events are supported directly with `yield from` added in Python 3.3,
+Nested *events* are supported directly with `yield from` added in Python 3.3,
 or you can use the older equivalent for-loop.
 
 ```python
@@ -235,20 +240,24 @@ TypeError: 'NoneType' object is not an iterator
 ```
 
 exception.
-This is because that `g` doesn't include any `yield` and thus is not a generator.
-But what event should we wait?
+
+This is because that `g` doesn't include any `yield` and thus is not a *generator*.
+But what should we `yield` to make this code work correctly, or, what *event* should we wait?
 The finish of initialization phase could be a good choice, that is,
 to add a `yield -1` at the top of `g`.
 This is reasonable since if the initialization isn't done yet,
-then the generators aren't waiting on the correct event index,
+then the generators aren't waiting on the correct *event index*,
 which could easily give wrong results.
 
 ## Summing up
 
 In the production code of Nicotb, it is necessary add more funcionalities like:
 
-* Allocate events dynamically,
-* Add `Fork`, `Join` and basic synchronization primitives and
+* Allocating events dynamically,
+* Adding `Fork`, `Join` and basic synchronization primitives and
 * Informative error messages.
 
 But most of them are software engineering tasks.
+
+Also, we don't explain how the SystemVerilog *event* is related to this parts,
+which we will elaborate in the [VPI](vpi.html) part.
