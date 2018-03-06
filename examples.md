@@ -1,6 +1,6 @@
 ---
-layout: default
-title: Nicotb Document
+layout: page
+title: Running Examples
 ---
 
 # Nicotb Co-simulation Workflow
