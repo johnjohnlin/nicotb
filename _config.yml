@@ -1,3 +1,6 @@
 name: Nicotb Project Document
 theme: minima
 markdown: kramdown
+github_username: johnjohnlin
+description: A tiny framework for Python-Verilog
+
