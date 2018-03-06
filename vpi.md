@@ -1,4 +1,4 @@
 ---
-layout: post
+layout: page
 title: "VPI"
 ---

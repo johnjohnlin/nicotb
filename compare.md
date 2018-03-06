@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title: "Compare with Cocotb"
 ---
 ## Coroutine
@@ -36,7 +36,7 @@ The Python 2 equivalent is
     for x in Func():
         yield x
 
-. I use *yield from* just because it's cool.
+. I use *yield from* just because it\'s cool.
 
 
 ## Connect to Verilog

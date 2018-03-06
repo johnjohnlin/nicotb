@@ -2,5 +2,8 @@ name: Nicotb Project Document
 theme: minima
 markdown: kramdown
 github_username: johnjohnlin
-description: A tiny framework for Python-Verilog
-
+title: "Nicotb document"
+description: "A tiny framework for Python-SystemVerilog co-sumulation"
+author: "Yu Sheng Lin"
+header_pages:
+ - index.html

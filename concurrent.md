@@ -1,9 +1,7 @@
 ---
-layout: post
-title: "Concurrency"
+layout: page
+title: "Support Concurrency in Nicotb"
 ---
-
-# Support Concurrency in Nicotb
 
 ## Introdution
 
@@ -98,8 +96,8 @@ Specifically, we maintain a *queue* to hold the pending *events* and a *list* to
 The logic of the scheduler is:
 
 1. As long as the *queue* is not empty, pop the *event index* and execute the waiting *generators*.
-1. If the *generator* doesn't terminate,
-   then it `yield`s an *event index* it's waiting for and should be added to the correspoinding *event index*.
+1. If the *generator* doesn\'t terminate,
+   then it `yield`s an *event index* it\'s waiting for and should be added to the correspoinding *event index*.
 1. If the *generator* is done, it will throw a `StopIteration`, and we can get rid of it forever.
 1. Whenever an *event* is triggered, it is pushed to the *queue*, and is scheduled in the next time step.
 
@@ -195,7 +193,7 @@ def main_loop(threads, n_event):
     while event_pending:
 ```
 
-We don't need to modify anything else to support SystemC-like `dont_initialize()`.
+We don\'t need to modify anything else to support SystemC-like `dont_initialize()`.
 Adding `yield -1` at the first line of `f` and `g` gives us:
 
 ```
@@ -241,12 +239,12 @@ TypeError: 'NoneType' object is not an iterator
 
 exception.
 
-This is because that `g` doesn't include any `yield` and thus is not a *generator*.
+This is because that `g` doesn\'t include any `yield` and thus is not a *generator*.
 But what should we `yield` to make this code work correctly, or, what *event* should we wait?
 The finish of initialization phase could be a good choice, that is,
 to add a `yield -1` at the top of `g`.
-This is reasonable since if the initialization isn't done yet,
-then the generators aren't waiting on the correct *event index*,
+This is reasonable since if the initialization isn\'t done yet,
+then the generators aren\'t waiting on the correct *event index*,
 which could easily give wrong results.
 
 ## Summing up
@@ -259,5 +257,5 @@ In the production code of Nicotb, it is necessary add more funcionalities like:
 
 But most of them are software engineering tasks.
 
-Also, we don't explain how the SystemVerilog *event* is related to this parts,
+Also, we don\'t explain how the SystemVerilog *event* is related to this parts,
 which we will elaborate in the [VPI](vpi.html) part.

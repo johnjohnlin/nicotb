@@ -1,8 +1,9 @@
 ---
-layout: home
+layout: page
 title: "Nicotb Document"
 ---
 ## Index
+* [Project page](https://github.com/johnjohnlin/nicotb)
 * Document
 	* [Build Nicotb](build.html)
 	* [Basic types of Nicotb](signal.html)
@@ -24,14 +25,13 @@ for Python-Verilog co-simulation through VPI which:
 ## Caveat
 
 I use Nicotb in my own project(s),
-and it's enough for simulating a DNN (CNN) accelerator and connecting with a DRAM simulator.
-However, This project is still at the very primary stage,
-and there are still many TODOs:
+and it\'s enough for simulating a DNN (CNN) accelerator and connecting with a DRAM simulator.
+However, this project still has many TODOs:
 
 * More complete runtime error checking and more verbose message,
-* More abundant event schedule and sync primitives,
-* Support for more protocols and more examples and
-* Check on more platforms.
+* more abundant event schedule and sync primitives,
+* support for more protocols and more examples and
+* check on more platforms.
 
-If you are looking at a complete Python co-simulation framework,
+If you are looking at a developed Python co-simulation framework,
 please Google Cocotb, and I also make a comparison [here](compare.html).
