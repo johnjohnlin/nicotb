@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Concurrency
+title: "Concurrency"
 ---
 
 # Support Concurrency in Nicotb

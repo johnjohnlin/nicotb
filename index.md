@@ -1,8 +1,8 @@
 ---
 layout: home
-title: Nicotb Document
+title: "Nicotb Document"
 ---
-# Index
+## Index
 * Document
 	* [Build Nicotb](build.html)
 	* [Basic types of Nicotb](signal.html)
@@ -13,7 +13,7 @@ title: Nicotb Document
 	* [Tutorial](concurrent.html)
 	* [VPI](vpi.html)
 
-# Introduction
+## Introduction
 
 Nicotb aims to provide a tiny but extensible framework
 for Python-Verilog co-simulation through VPI which:
@@ -21,7 +21,7 @@ for Python-Verilog co-simulation through VPI which:
 * Maximize the use of existing popular libraries,
 * Unify and simplify the interface between Python & Verilog.
 
-# Caveat
+## Caveat
 
 I use Nicotb in my own project(s),
 and it's enough for simulating a DNN (CNN) accelerator and connecting with a DRAM simulator.
