@@ -30,6 +30,7 @@ __all__ = [
 	"GetEvent",
 	"SignalEvent",
 	"DestroyEvent",
+	"INIT_EVENT",
 	# utils
 	"Fork",
 	"RegisterCoroutines",

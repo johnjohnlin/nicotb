@@ -41,3 +41,7 @@ def SignalEvent(ev, all_ev=True):
 def DestroyEvent(ev: int):
 	waiting_coro[ev] = list()
 	event_released.add(ev)
+
+# Initialize a default event, so coroutines can implement SystemC-like dont_initialize
+INIT_EVENT = CreateEvent()
+SignalEvent(INIT_EVENT)
