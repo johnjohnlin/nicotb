@@ -95,12 +95,13 @@ void ReadBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
 
 void WriteBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
 {
+	static s_vpi_time tm {vpiSimTime, 0, 0, 0};
 	ITER_ROUTINE_BEGIN(NPY_ITER_READONLY)
 		s_vpi_vecval vecval;
 		memcpy(&vecval.aval, v_dat, itemsize0);
 		memcpy(&vecval.bval, x_dat, itemsize0);
 		v.value.vector = &vecval;
-		vpi_put_value(*it, &v, nullptr, vpiNoDelay);
+		vpi_put_value(*it, &v, &tm, vpiInertialDelay);
 	ITER_ROUTINE_END
 }
 

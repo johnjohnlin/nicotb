@@ -24,10 +24,10 @@
 	always @(negedge sig) #0 if($NicotbTriggerEvent(name)) $finish;
 `define PosIf(name, sig, cond) \
 	integer name = -1; \
-	always @(posedge sig) #0 if (cond) #0 if ($NicotbTriggerEvent(name)) $finish;
+	always @(posedge sig) #0 if (cond) if ($NicotbTriggerEvent(name)) $finish;
 `define NegIf(name, sig, cond) \
 	integer name = -1; \
-	always @(negedge sig) #0 if (cond) #0 if ($NicotbTriggerEvent(name)) $finish;
+	always @(negedge sig) #0 if (cond) if ($NicotbTriggerEvent(name)) $finish;
 `define WithFinish \
 	logic nicotb_fin_wire; \
 	initial begin \
