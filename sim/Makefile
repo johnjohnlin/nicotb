@@ -1,5 +1,5 @@
-NICOTB=~/nicotb/lib
-IRUN=/opt/CAD/INCISIV/cur/tools.lnx86/bin/64bit/irun
+NICOTB=/opt/nicotb/lib
+IRUN=irun
 
 %: %.sv
 	GLOG_logtostderr=1 \
