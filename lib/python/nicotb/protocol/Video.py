@@ -22,6 +22,7 @@ class Master(Receiver):
 		"vsync", "hsync", "data", "clk",
 		"VRANGE", "VSYNC", "VVALID",
 		"HRANGE", "HSYNC", "HVALID",
+		"strict",
 	]
 	def _Translate(self, timing):
 		idx = np.arange(sum(timing), dtype=np.int32)
@@ -33,7 +34,7 @@ class Master(Receiver):
 
 	def __init__(
 		self, vsync: Bus, hsync: Bus, data: Bus, clk: int,
-		VTIMING, HTIMING, callbacks = list()
+		VTIMING, HTIMING, callbacks = list(), strict = True
 	):
 		super(Master, self).__init__(callbacks)
 		self.vsync = GetBus(vsync)
@@ -45,6 +46,7 @@ class Master(Receiver):
 		self.vsync.value[0] = 1
 		self.hsync.value[0] = 1
 		self.data.SetToNumber()
+		self.strict = strict
 
 	def _FrameBody(self, frame):
 		it = iter(frame)
@@ -55,7 +57,7 @@ class Master(Receiver):
 				if self.VVALID[y] and self.HVALID[x]:
 					self.data.SetToNumber()
 					self.data.values = next(it)
-				else:
+				else if self.strict:
 					self.data.SetToX()
 				self.hsync.Write()
 				self.vsync.Write()

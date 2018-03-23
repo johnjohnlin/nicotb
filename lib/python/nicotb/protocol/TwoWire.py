@@ -18,10 +18,10 @@ from nicotb import *
 from nicotb.utils import RandProb
 
 class Master(Receiver):
-	__slots__ = ["rdy", "ack", "data", "clk", "A", "B"]
+	__slots__ = ["rdy", "ack", "data", "clk", "A", "B", "strict"]
 	def __init__(
 		self, rdy: Bus, ack: Bus, data: Bus,
-		clk: int, A=1, B=5, callbacks=list()
+		clk: int, A = 1, B = 5, callbacks = list(), strict = True
 	):
 		super(Master, self).__init__(callbacks)
 		self.rdy = GetBus(rdy)
@@ -30,6 +30,7 @@ class Master(Receiver):
 		self.clk = GetEvent(clk)
 		self.A = A
 		self.B = B
+		self.strict = strict
 		self.rdy.value[0] = 0
 		self.rdy.Write()
 
@@ -42,7 +43,8 @@ class Master(Receiver):
 
 	def _X(self):
 		self.rdy.value[0] = 0
-		self.data.SetToX()
+		if self.strict:
+			self.data.SetToX()
 		self.rdy.Write()
 		self.data.Write()
 
