@@ -174,6 +174,12 @@ static PLI_INT32 Final(PLI_BYTE8 *args)
 	return 0;
 }
 
+static PLI_INT32 UpdateWrite(PLI_BYTE8 *args)
+{
+	Python::UpdateWrite();
+	return 0;
+}
+
 static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 {
 	vpiHandle systfref, args_iter, argh;
@@ -199,6 +205,7 @@ extern "C" void VpiBoot()
 	using namespace Nicotb::Vpi;
 	static s_vpi_systf_data tasks[] = {
 		{vpiSysFunc, vpiIntFunc, "$NicotbTriggerEvent", TriggerEvent, nullptr, nullptr, nullptr},
+		{vpiSysTask, vpiSysTask, "$NicotbUpdateWrite", UpdateWrite, nullptr, nullptr, nullptr},
 		{vpiSysTask, vpiSysTask, "$NicotbInit", Init, nullptr, nullptr, nullptr},
 		{vpiSysTask, vpiSysTask, "$NicotbFinal", Final, nullptr, nullptr, nullptr}
 	};

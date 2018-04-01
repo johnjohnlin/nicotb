@@ -35,6 +35,7 @@ namespace Python {
 void Init();
 void InitTest();
 void Final();
+bool UpdateWrite();
 bool TriggerEvent(size_t i);
 // VPI must implement these functions
 void ReadBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list);

@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -180,12 +180,6 @@ class Bus(object):
 		else:
 			Bus._write_pend.add(self)
 
-	@staticmethod
-	def FlushWrite():
-		for s in Bus._write_pend:
-			s.Write(True)
-		Bus._write_pend.clear()
-
 	def SetToZ(self):
 		for s in self.signals:
 			s.SetToZ()
@@ -256,3 +250,7 @@ def GetBus(bus):
 	else:
 		return CreateBus(bus)
 
+def FlushBusWrite():
+	for s in Bus._write_pend:
+		s.Write(True)
+	Bus._write_pend.clear()

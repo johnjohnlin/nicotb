@@ -25,9 +25,9 @@ namespace Python {
 
 using namespace std;
 
-static PyObject* PyInit_func();
 static PyObject *p_set_event;
 static PyObject *p_main_loop;
+static PyObject *p_update_write;
 static PyObject *p_bridge_module;
 static PyObject *p_test_module;
 
@@ -129,13 +129,30 @@ static void ImportTest()
 	CHECK_NOTNULL(p_test_module);
 	p_set_event = PyObject_GetAttrString(p_test_module, "SignalEvent");
 	p_main_loop = PyObject_GetAttrString(p_test_module, "MainLoop");
-	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr) <<
+	p_update_write = PyObject_GetAttrString(p_test_module, "FlushBusWrite");
+	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr or p_update_write == nullptr) <<
 		"Cannot find necessary functions, did you from nicotb import * in your code?";
 	Py_DECREF(p_module_name);
 }
 
+bool UpdateWrite()
+{
+	// FIXME: They are initialized only after ImportTest, we should prevent this
+	if (p_update_write == nullptr) {
+		return true;
+	}
+	PyObject *o = PyObject_CallFunction(p_update_write, "");
+	PyErr_Print();
+	Py_XDECREF(o);
+	return o == nullptr;
+}
+
 bool TriggerEvent(size_t i)
 {
+	// FIXME: They are initialized only after ImportTest, we should prevent this
+	if (p_set_event == nullptr or p_main_loop == nullptr) {
+		return true;
+	}
 	PyObject *o1 = PyObject_CallFunction(p_set_event, "nO", Py_ssize_t(i), Py_True);
 	PyObject *o2 = PyObject_CallFunction(p_main_loop, "");
 	PyErr_Print();

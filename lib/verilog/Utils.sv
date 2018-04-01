@@ -15,19 +15,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
-// FIXME: #0 is a very bad workaround
 `define Pos(name, sig) \
 	integer name = -1; \
-	always @(posedge sig) #0 if($NicotbTriggerEvent(name)) $finish;
+	always @(posedge sig) if($NicotbTriggerEvent(name)) $finish; else #0 $NicotbUpdateWrite();
 `define Neg(name, sig) \
 	integer name = -1; \
-	always @(negedge sig) #0 if($NicotbTriggerEvent(name)) $finish;
+	always @(negedge sig) if($NicotbTriggerEvent(name)) $finish; else #0 $NicotbUpdateWrite();
 `define PosIf(name, sig, cond) \
 	integer name = -1; \
-	always @(posedge sig) #0 if (cond) if ($NicotbTriggerEvent(name)) $finish;
+	always @(posedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish; else #0 $NicotbUpdateWrite();
 `define NegIf(name, sig, cond) \
 	integer name = -1; \
-	always @(negedge sig) #0 if (cond) if ($NicotbTriggerEvent(name)) $finish;
+	always @(negedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish; else #0 $NicotbUpdateWrite();
+// useful for gate level
+`define PosIfDelayed(name, sig, cond, t) \
+	integer name = -1; \
+	always @(posedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish; else #(t) $NicotbUpdateWrite();
+`define NegIfDelayed(name, sig, cond, t) \
+	integer name = -1; \
+	always @(negedge sig) if ((cond) && $NicotbTriggerEvent(name)) $finish; else #(t) $NicotbUpdateWrite();
 `define WithFinish \
 	logic nicotb_fin_wire; \
 	initial begin \

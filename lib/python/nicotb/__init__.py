@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -24,6 +24,7 @@ __all__ = [
 	"CreateBus",
 	"CreateBuses",
 	"GetBus",
+	"FlushBusWrite",
 	# signal
 	"CreateEvent",
 	"CreateEvents",
@@ -75,7 +76,6 @@ def MainLoop():
 		else:
 			proc = [waiting_coro.pop()]
 		RegisterCoroutines(proc)
-	Bus.FlushWrite()
 
 def FinishSim():
 	fin_bus = CreateBus(("nicotb_fin_wire",))
