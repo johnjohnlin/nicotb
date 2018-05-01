@@ -16,7 +16,7 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
-from nicotb.utils import Scoreboard, Stacker
+from nicotb.utils import Scoreboard, BusGetter, Stacker
 from nicotb.protocol import OneWire
 import numpy as np
 from os import getenv
@@ -26,11 +26,12 @@ N = 10
 def main():
 	scb = Scoreboard()
 	test1 = scb.GetTest("test1")
-	st = Stacker(N, [test1.Get, lambda x: print("Print with name: {}".format(x.o))])
+	st = Stacker(N, callbacks=[test1.Get, lambda x: print("Print with name: {}".format(x.o))])
+	bg = BusGetter(callbacks=[st.Get])
 	yield rs_ev
 	yield ck_ev
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
-	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, st.Get])
+	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, bg.Get])
 	values = master.values
 	arr = np.random.randint(16, size=N*3, dtype=np.int32)
 	golden = np.sum(np.reshape(arr, (-1,3)), axis=1, keepdims=1, dtype=np.int32)

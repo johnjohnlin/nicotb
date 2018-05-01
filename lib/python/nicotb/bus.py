@@ -39,6 +39,10 @@ class SignalTuple(tuple):
 			raise AttributeError
 		return super(SignalTuple, self).__getitem__(i)
 
+	def Copy(self, i):
+		# pass as tuple, SignalTuple
+		return SignalTuple(self, self)
+
 class Signal(object):
 	"A wrapper that keeps a signal in a bus"
 	__slots__ = ["_x", "_value"]

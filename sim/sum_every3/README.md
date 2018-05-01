@@ -1,8 +1,8 @@
 # How to execute
 ## Direct version
 
-    make -f ../Makefile
+    make -f ../Makefile sm
 
 ## Iterable version
 
-    make TEST=sm2 -f ../Makefile
+    ITER= make -f ../Makefile sm

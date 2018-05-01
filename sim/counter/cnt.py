@@ -16,26 +16,32 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
-from nicotb.utils import Scoreboard, Stacker
+from nicotb.utils import Scoreboard, BusGetter, Stacker
 from nicotb.protocol import TwoWire
 import numpy as np
 from itertools import repeat
 
 def main():
-	N = 7
+	Ns = np.array([0,8,7], dtype=np.int32)
 	scb = Scoreboard()
 	test = scb.GetTest("test")
-	st = Stacker(N+1, [test.Get])
-	golden = np.arange(N+1, dtype=np.int32)[:,np.newaxis]
+	golden = np.concatenate([
+		np.arange(N+1, dtype=np.int32) for N in Ns
+	])[:,np.newaxis]
+	st = Stacker(n=golden.shape[0], callbacks=[test.Get])
+	bg = BusGetter(callbacks=[st.Get])
 	test.Expect((golden,))
-	master = TwoWire.Master(irdy, iack, i, ck_ev)
-	slave = TwoWire.Slave(ordy, oack, o, ck_ev, callbacks=[st.Get])
 	yield rst_out_ev
-	yield ck_ev
+
+	master = TwoWire.Master(irdy, iack, i, ck_ev)
+	slave = TwoWire.Slave(ordy, oack, o, ck_ev, callbacks=[bg.Get])
 
 	values = master.values
-	values[0][0] = N
-	yield from master.Send(master.data.values)
+	def it():
+		for N in Ns:
+			values[0][0] = N
+			yield values
+	yield from master.SendIter(it())
 
 	# for i in range(100):
 	# 	yield ck_ev

@@ -158,63 +158,56 @@ class Tester(object):
 	def is_clean(self):
 		return len(self.exp) == 0
 
+class BusGetter(Receiver):
+	"""This class converts a Bus transaction to a (subclass of) tuple of ndarray"""
+	__slots__ = ["copy"]
+	def __init__(self, copy=False, callbacks=list()):
+		super(BusGetter, self).__init__(callbacks)
+		self.copy = copy
+
+	def Get(self, bus):
+		assert all(not np.any(xval) for xval in bus.xs), "Bus has unknown values"
+		super(BusGetter, self).Get(bus.values.Copy() if self.copy else bus.values)
+
 class Stacker(Receiver):
-	"""This class stacks a Bus object to tuples of ndarray"""
-	__slots__ = ["n", "curn", "buf"]
-	def __init__(self, n=0, callbacks=list()):
+	"""This class stacks tuples."""
+	__slots__ = ["n", "copy", "curn", "buf"]
+	def __init__(self, n=0, copy=False, callbacks=list()):
 		super(Stacker, self).__init__(callbacks)
 		self.n = n
+		self.copy = copy
 		self.curn = 0
 		self.buf = None
 
 	def Resize(self, n, force=False):
 		assert self.is_clean
-		if n == 0:
+		if n == 0 or n > self.n or force:
 			self.buf = None
-		elif self.buf and (self.n < n or force):
+		self.n = n
+
+	def _Allocate(self, ref):
+		if self.buf is None and self.n != 0:
 			self.buf = tuple(
 				np.empty(
-					(n,)+a.shape[1:],
-					dtype=a.dtype
-				) for a in self.buf
+					(self.n,)+r.shape,
+					dtype=r.dtype
+				) for r in ref
 			)
-		self.n = n
 
 	def Get(self, x):
 		assert self.n != 0, "Unsized Stacker cannot get values"
-		assert all(not np.any(xval) for xval in x.xs), "Signal has unknown values"
-		if self.buf is None:
-			self.buf = tuple(
-				np.empty(
-					(self.n,)+a.shape,
-					dtype=a.dtype
-				) for a in x.values
-			)
-		for dst, src in zip(self.buf, x.values):
+		self._Allocate(x)
+		for dst, src in zip(self.buf, x):
 			dst[self.curn] = src
 		self.curn += 1
 		if self.curn == self.n:
-			super(Stacker, self).Get(SignalTuple((a[:self.curn] for a in self.buf), x.values))
+			got = SignalTuple((a[:self.curn] for a in self.buf), x)
+			super(Stacker, self).Get(got.Copy() if self.copy else got)
 			self.curn = 0
 
 	@property
 	def is_clean(self):
 		return self.curn == 0
-
-class StackerWithX(Receiver):
-	__slots__ = ["n", "curn", "buf"]
-	def __init__(self, n=0):
-		raise NotImplementedError()
-
-	def Resize(self, n, force=False):
-		pass
-
-	def Get(self, x):
-		pass
-
-	@property
-	def is_clean(self):
-		pass
 
 def ExpandSignalGroup(hier: str, prefix: str, groups):
 	return tuple(

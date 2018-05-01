@@ -1,4 +1,4 @@
-NICOTB=/opt/nicotb/lib
+NICOTB=../../lib
 IRUN=irun
 
 %: %.sv
