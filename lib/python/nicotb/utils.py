@@ -65,11 +65,11 @@ class Scoreboard(object):
 			conn.commit()
 			conn.close()
 
-	def GetTest(self, name, max_err=0, formator=DefaultFormator):
+	def GetTest(self, name, max_err=0, formator=DefaultFormator, ne=None):
 		if name in self.tests:
 			return self.tests[name]
 		else:
-			ret = Tester(name, max_err, formator)
+			ret = Tester(name, max_err, formator, ne)
 			self.tests[name] = ret
 			return ret
 
@@ -132,19 +132,25 @@ class Scoreboard(object):
 			conn.close()
 
 class Tester(object):
-	__slots__ = ["exp", "max_err", "name", "err", "ok", "formator"]
-	def __init__(self, name, max_err, formator):
+	__slots__ = ["exp", "max_err", "name", "err", "ok", "formator", "ne"]
+	def __init__(self, name, max_err, formator, ne):
 		self.exp = deque()
 		self.max_err = max_err
 		self.name = name
 		self.ok = 0
 		self.err = 0
 		self.formator = formator
+		self.ne = ne
 
 	def Get(self, x):
 		assert len(self.exp) != 0, "{} does not expect anything".format(self.name)
 		head = self.exp.popleft()
-		if any(not np.array_equal(a,b) for a, b in zip(head, x)):
+		nev = (
+			not all([np.array_equal(a,b) for a, b in zip(head, x)])
+			if self.ne is None
+			else self.ne(head, x)
+		)
+		if nev:
 			print(self.formator(head, x))
 			assert self.err < self.max_err, "Tester [{}] has reached the max error count".format(self.name)
 			self.err += 1
