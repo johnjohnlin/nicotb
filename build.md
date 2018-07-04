@@ -154,5 +154,5 @@ Also, you must change `g++` to `g++-8` (or whatever).
 Very commonly, `LD_PRELOAD` must be used to prioritize new libraries.
 
 ```bash
-export LD_PRELOAD=${HOME}/install/lib64/libstdc++.so:${HOME}/install/lib/libpython3.6m.so
+export LD_PRELOAD=${HOME}/install/lib64/libstdc++.so:${HOME}/install/lib/libpython3.6m.so:${HOME}/install/lib/libglog.so
 ```
