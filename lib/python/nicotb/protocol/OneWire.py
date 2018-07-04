@@ -16,6 +16,7 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import *
 from nicotb.utils import RandProb
+from itertools import repeat
 
 class Master(Receiver):
 	__slots__ = ["valid", "data", "clk", "A", "B", "strict"]
@@ -47,16 +48,28 @@ class Master(Receiver):
 		self.valid.Write()
 		self.data.Write()
 
-	def SendIter(self, it):
-		for data in it:
+	def SendIter(self, it, latency=None):
+		if latency is None:
+			# random drive
+			litit = repeat(map(lambda _: not RandProb(self.A, self.B), repeat(None)))
+		else:
+			try:
+				# programmable spacing
+				spacing = iter(latency)
+			except:
+				# constant spacing
+				spacing = repeat(latency)
+			litit = map(range, spacing)
+		for data, lit in zip(it, litit):
 			self._D(data)
 			yield self.clk
 			super(Master, self).Get(data)
-			if not RandProb(self.A, self.B):
-				self._X()
+			first_time = True
+			for dummy in lit:
+				if first_time:
+					first_time = False
+					self._X()
 				yield self.clk
-				while not RandProb(self.A, self.B):
-					yield self.clk
 		self._X()
 		yield self.clk
 
