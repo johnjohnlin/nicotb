@@ -47,18 +47,24 @@ Fortunately, there is a
 [good article](https://stackoverflow.com/questions/9450394/how-to-install-gcc-piece-by-piece-with-gmp-mpfr-mpc-elf-without-shared-libra)
 about installing gcc.
 In following parts I will give a brief introduction about installing the gcc dependencies, gcc, Python, glog, and numpy in order.
-First, you need these files (any newer version should be fine):
+First, you need these files, and any newer version should be fine:
 
-```text
-gcc-6.1.0.tar.bz2
-glog-master.zip
-gmp-6.1.0.tar.bz2
-mpc-1.0.3.tar.gz
-mpfr-3.1.4.tar.bz2
-numpy-1.14.2.zip
-binutils-2.30.tar.gz
-Python-3.6.5.tgz
-```
+* [mpfr 3.14](ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-3.1.4.tar.bz2)
+* [mpc 1.0.3](ftp://gcc.gnu.org/pub/gcc/infrastructure/mpc-1.0.3.tar.gz)
+* [gmp 6.1.0](ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-6.1.0.tar.bz2)
+* [gcc 8.1.0](https://ftp.gnu.org/gnu/gcc/gcc-8.1.0/gcc-8.1.0.tar.xz)
+* [binutils 2.30](https://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.xz)
+* [Python 3.6.5](https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz)
+* [Numpy 1.14.5](https://files.pythonhosted.org/packages/d5/6e/f00492653d0fdf6497a181a1c1d46bbea5a2383e7faf4c8ca6d6f3d2581d/numpy-1.14.5.zip)
+* [Google logger (master branch)](https://github.com/google/glog/archive/master.zip)
+
+If the links are invalidated, then try to find in these pages:
+* [binutils](https://ftp.gnu.org/gnu/binutils/)
+* [gcc, g++](https://ftp.gnu.org/gnu/gcc/)
+* [mpfr, mpc, gmp](ftp://gcc.gnu.org/pub/gcc/infrastructure/)
+* [Python](https://www.python.org/downloads/source/)
+* [Numpy](https://pypi.org/project/numpy/#files)
+* [Google logger](https://github.com/google/glog)
 
 . Note that Github does not allow older protocol of OpenSSL/wget/git,
 so sometimes you might have to download them from other PCs.
@@ -66,8 +72,11 @@ Also, you should notice that some very old PCs cannot unzip these files.
 
 ```bash
 mkdir ${HOME}/install
-# binutils
-./configure --prefix=${HOME}/install
+mkdir /tmp/gcc
+# binutils (Note: must configure under a clean directory)
+mkdir build_binutils
+cd build_binutils
+/absolute_path/configure --prefix=${HOME}/install
 make install
 # GMP
 ./configure \
@@ -85,18 +94,18 @@ make install
 	--prefix=/tmp/gcc --with-gmp=/tmp/gcc --with-mpfr=/tmp/gcc
 make install
 # GCC (Note: must configure under a clean directory)
-mkdir build
-cd build
-../configure \
+mkdir build_gcc
+cd build_gcc
+/absolute_path/configure \
 	--prefix=$HOME/install/ --enable-languages=c,c++ \
 	--enable-shared --enable-threads=posix -enable-__cxa_atexit \
 	--with-gmp=/tmp/gcc --with-mpc=/tmp/gcc --with-mpfr=/tmp/gcc \
-	--program-suffix=-6.1
+	--program-suffix=-8
 # set path (setenv for csh)
 # It's better to add this to your bashrc.
 # FIXME: The 32 and 64 path might mix-up?
 export PATH=$PATH:$HOME/install/bin
-export CC=gcc-6.1
+export CC=gcc-8
 export LD_LIBRARY_PATH=$HOME/install/lib:$HOME/install/lib64
 ```
 
@@ -107,6 +116,10 @@ export LD_LIBRARY_PATH=$HOME/install/lib:$HOME/install/lib64
 ./configure --prefix=${HOME}/install --enable-optimizations --enable-shared
 make
 make install
+# Numpy（If the following build fails.)
+# export BLAS=None
+# export LAPACK=None
+# export ATLAS=None
 # Numpy
 ~/install/bin/python3 setup.py build
 ~/install/bin/python3 setup.py build_ext
@@ -122,6 +135,7 @@ This is simpler to compile.
 ```bash
 ./autogen.sh --force
 ./configure --prefix=${HOME}/install
+make install
 ```
 
 ## Modify the Makefile
@@ -133,7 +147,7 @@ ${HOME}/install/lib/python3.6/site-packages/numpy-1.14.2-py3.6-linux-x86_64.egg/
 ```
 
 . And you must use `-I path/to/include` flag for `g++`.
-Also, you must change `g++` to `g++-6.1` (or whatever).
+Also, you must change `g++` to `g++-8` (or whatever).
 
 ## Preload libraries
 
