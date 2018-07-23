@@ -1,4 +1,4 @@
-// Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -15,12 +15,67 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 #include "nicotb_python.h"
+#include <numpy/ndarrayobject.h>
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
 #include <vector>
 
 namespace Nicotb {
+
+bool ValueIterProxy::Next()
+{
+	PyArrayObject *&p_v = p_vx_[0], *&p_x = p_vx_[1];
+	// This line use switch as generator
+	switch (state_) { case INIT:
+	for (
+		_p_v_ = PyIter_Next(p_it_v_), _p_x_ = PyIter_Next(p_it_x_);
+		_p_v_;
+		_p_v_ = PyIter_Next(p_it_v_), _p_x_ = PyIter_Next(p_it_x_)
+	) {
+		p_v = (PyArrayObject*)_p_v_;
+		p_x = (PyArrayObject*)_p_x_;
+		CHECK(PyArray_CheckExact(p_v) and PyArray_CheckExact(p_x)) << "Inputs are not numpy array";
+		CHECK_EQ(PyArray_SIZE(p_v), PyArray_SIZE(p_x)) << "Array size mismatch";
+		if (PyArray_SIZE(p_v) == 0) {
+			LOG(WARNING) << "Ignore zero-sized array";
+			continue;
+		}
+		iter_ = CHECK_NOTNULL(NpyIter_MultiNew(
+			2, p_vx_, NPY_ITER_EXTERNAL_LOOP,
+			NPY_KEEPORDER, NPY_NO_CASTING, OP_FLAGS_, nullptr
+		));
+		IterNext_ = NpyIter_GetIterNext(iter_, nullptr);
+		inner_stride0_ = NpyIter_GetInnerStrideArray(iter_)[0];
+		inner_stride1_ = NpyIter_GetInnerStrideArray(iter_)[1];
+		item_size0_ = NpyIter_GetDescrArray(iter_)[0]->elsize;
+		item_size1_ = NpyIter_GetDescrArray(iter_)[0]->elsize;
+		inner_size_ptr_ = NpyIter_GetInnerLoopSizePtr(iter_);
+		data_ptr_array_ = NpyIter_GetDataPtrArray(iter_);
+		do {
+			inner_size_ = *inner_size_ptr_;
+			v_dat_ = data_ptr_array_[0];
+			x_dat_ = data_ptr_array_[1];
+			for(
+				inner_count_ = 0;
+				inner_count_ < inner_size_;
+				inner_count_++, v_dat_ += inner_stride0_, x_dat_ += inner_stride1_
+			) {
+				state_ = LOOP;
+				return true;
+				case LOOP: ;
+				// NEXT_YIELD(LOOP, true);
+			}
+		} while (IterNext_(iter_));
+		Py_DECREF(_p_v_);
+		Py_DECREF(_p_x_);
+	}
+	state_ = DONE;
+	case DONE: ;
+	} // end switch
+	return false;
+}
+
 namespace Python {
 
 using namespace std;
@@ -39,7 +94,7 @@ static PyObject* ReadBus(PyObject *dummy, PyObject *args)
 	if (!PyArg_ParseTuple(args, "IOO", &i, &v_list, &x_list)) {
 		return nullptr;
 	}
-	ReadBusExt(i, v_list, x_list);
+	ReadBusExt(i, ValueIterProxy(v_list, x_list, NPY_ITER_WRITEONLY));
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -52,7 +107,7 @@ static PyObject* WriteBus(PyObject *dummy, PyObject *args)
 	if (!PyArg_ParseTuple(args, "IOO", &i, &v_list, &x_list)) {
 		return nullptr;
 	}
-	WriteBusExt(i, v_list, x_list);
+	WriteBusExt(i, ValueIterProxy(v_list, x_list, NPY_ITER_READONLY));
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -103,7 +158,6 @@ static PyObject* BindBus(PyObject *dummy, PyObject *args)
 
 static PyObject* InitBridgeModule()
 {
-	// TODO: Error when they are not static, why?
 	static PyMethodDef nicotb_bridge_methods[] = {
 		{"WriteBus", WriteBus, METH_VARARGS, ""},
 		{"ReadBus", ReadBus, METH_VARARGS, ""},
@@ -165,6 +219,13 @@ void Init()
 {
 	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
 	Py_Initialize();
+	auto Imp = []() -> int {
+		// this is required for each compile unit
+		// this macro make this function return 1 if failed
+		import_array1(1);
+		return 0;
+	};
+	CHECK_EQ(Imp(), 0) << "Import Numpy fails";
 }
 
 void InitTest()

@@ -1,4 +1,4 @@
-// Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -16,7 +16,6 @@
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 #include "vpi_user.h"
 #include "nicotb_python.h"
-#include <numpy/ndarrayobject.h>
 #include <fstream>
 
 namespace Nicotb {
@@ -33,76 +32,45 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 
 namespace Python {
 
-#define ITER_ROUTINE_BEGIN(ITER_FLAG)\
-	vector<vpiHandle> &handles = registered_handles[i];\
-	CHECK_EQ(PyTuple_Size(value_list), PyTuple_Size(xxx_list)) << "Tuple length mismatch";\
-	PyObject *p_it_v = CHECK_NOTNULL(PyObject_GetIter(value_list));\
-	PyObject *p_it_x = CHECK_NOTNULL(PyObject_GetIter(xxx_list));\
-	auto it = handles.begin();\
-	for (\
-		PyObject *_p_v = PyIter_Next(p_it_v), *_p_x = PyIter_Next(p_it_x);\
-		_p_v;\
-		_p_v = PyIter_Next(p_it_v), _p_x = PyIter_Next(p_it_x)\
-	) {\
-		PyArrayObject *p_v = (PyArrayObject*)_p_v, *p_x = (PyArrayObject*)_p_x;\
-		CHECK(PyArray_CheckExact(p_v) and PyArray_CheckExact(p_x)) << "Inputs are not numpy array";\
-		CHECK_EQ(PyArray_SIZE(p_v), PyArray_SIZE(p_x)) << "Array size mismatch";\
-		CHECK_LE(PyArray_SIZE(p_v), handles.end()-it) << "No enough Verilog signal left";\
-		if (PyArray_SIZE(p_v) == 0) {\
-			LOG(WARNING) << "Ignore zero-sized array";\
-			continue;\
-		}\
-		PyArrayObject *op[2]{p_v, p_x};\
-		npy_uint32 op_flags[2]{(ITER_FLAG), (ITER_FLAG)};\
-		NpyIter *iter = CHECK_NOTNULL(NpyIter_MultiNew(\
-			2, op, NPY_ITER_EXTERNAL_LOOP,\
-			NPY_KEEPORDER, NPY_NO_CASTING, op_flags, nullptr\
-		));\
-		NpyIter_IterNextFunc *iternext = NpyIter_GetIterNext(iter, nullptr);\
-		npy_intp innerstride0 = NpyIter_GetInnerStrideArray(iter)[0],\
-		         innerstride1 = NpyIter_GetInnerStrideArray(iter)[1],\
-		         itemsize0 = NpyIter_GetDescrArray(iter)[0]->elsize,\
-		         itemsize1 = NpyIter_GetDescrArray(iter)[0]->elsize,\
-		         *innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);\
-		char **dataptrarray = NpyIter_GetDataPtrArray(iter);\
-		CHECK_EQ(itemsize0, itemsize1) << "Array dtype mismatch";\
-		do {\
-			npy_intp size = *innersizeptr;\
-			char *v_dat = dataptrarray[0], *x_dat = dataptrarray[1];\
-			for(npy_intp i = 0; i < size; i++, v_dat += innerstride0, x_dat += innerstride1) {\
-				s_vpi_value v;\
-				v.format = vpiVectorVal;
-
-#define ITER_ROUTINE_END\
-				++it;\
-			}\
-		} while (iternext(iter));\
-		Py_DECREF(_p_v);\
-		Py_DECREF(_p_x);\
-	}\
-	CHECK(it == handles.end()) << "Tuple length mismatch";\
-	Py_DECREF(p_it_v);\
-	Py_DECREF(p_it_x);
-
-void ReadBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
+void ReadBusExt(const size_t i, ValueIterProxy &&values_proxy)
 {
-	ITER_ROUTINE_BEGIN(NPY_ITER_WRITEONLY)
+	auto it = registered_handles[i].begin(), it_end = registered_handles[i].end();
+	while (true) {
+		const bool fin1 = it == it_end;
+		const bool fin2 = values_proxy.Done();
+		if (fin1 or fin2) {
+			LOG_IF(ERROR, not (fin1 and fin2)) << "Signal " << i << " has different numbers of elements with numpy.";
+			break;
+		}
+		s_vpi_value v;
+		v.format = vpiVectorVal;
 		vpi_get_value(*it, &v);
-		memcpy(v_dat, &v.value.vector->aval, itemsize0);
-		memcpy(x_dat, &v.value.vector->bval, itemsize0);
-	ITER_ROUTINE_END
+		values_proxy.Set(v.value.vector->aval, v.value.vector->bval);
+		++it;
+		values_proxy.Next();
+	}
 }
 
-void WriteBusExt(const size_t i, PyObject *value_list, PyObject *xxx_list)
+void WriteBusExt(const size_t i, ValueIterProxy &&values_proxy)
 {
 	static s_vpi_time tm {vpiSimTime, 0, 0, 0};
-	ITER_ROUTINE_BEGIN(NPY_ITER_READONLY)
+	auto it = registered_handles[i].begin(), it_end = registered_handles[i].end();
+	while (true) {
+		const bool fin1 = it == it_end;
+		const bool fin2 = values_proxy.Done();
+		if (fin1 or fin2) {
+			LOG_IF(WARNING, not (fin1 and fin2)) << "Signal " << i << " has different numbers of elements with numpy.";
+			break;
+		}
+		s_vpi_value v;
 		s_vpi_vecval vecval;
-		memcpy(&vecval.aval, v_dat, itemsize0);
-		memcpy(&vecval.bval, x_dat, itemsize0);
+		v.format = vpiVectorVal;
 		v.value.vector = &vecval;
+		values_proxy.Get(vecval.aval, vecval.bval);
 		vpi_put_value(*it, &v, &tm, vpiInertialDelay);
-	ITER_ROUTINE_END
+		++it;
+		values_proxy.Next();
+	}
 }
 
 void BindBusExt(const BusEntry &bus)
@@ -214,7 +182,6 @@ extern "C" void VpiBoot()
 	}
 	google::InitGoogleLogging("nicotb");
 	Nicotb::Python::Init();
-	_import_array(); // this is required for each compile unit
 }
 
 // TODO: this is not recognized by ncverilog?
