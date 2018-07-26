@@ -33,8 +33,8 @@ def main():
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
 	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, bg.Get])
 	values = master.values
-	arr = np.random.randint(16, size=N*3, dtype=np.int32)
-	golden = np.sum(np.reshape(arr, (-1,3)), axis=1, keepdims=1, dtype=np.int32)
+	arr = np.random.randint(16, size=(N*3,2), dtype=np.int32)
+	golden = np.sum(np.reshape(arr, (-1,6)), axis=1, keepdims=1, dtype=np.int32)
 	test1.Expect((golden,)) # must pass
 	# test1.Expect((golden+1,)) # must fail
 	ITER = not getenv("ITER") is None
@@ -42,12 +42,14 @@ def main():
 	if ITER:
 		def it():
 			for i in arr:
-				values.i[0] = i
+				print(arr)
+				print(i)
+				np.copyto(values.i, i)
 				yield values
 		yield from master.SendIter(it())
 	else:
 		for i in arr:
-			values.i[0] = i
+			np.copyto(values.i, i)
 			yield from master.Send(values)
 	for i in range(10):
 		yield ck_ev
@@ -56,7 +58,7 @@ def main():
 src_val, dst_val, src_dat, dst_dat = CreateBuses([
 	("i_dval",),
 	("o_dval",),
-	(("u_dut", "i"),),
+	(("u_dut", "i", (2,)),),
 	(("u_dut", "o"),),
 ])
 ck_ev, rs_ev = CreateEvents(["ck_ev", "rst_out",])
