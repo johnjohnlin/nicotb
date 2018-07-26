@@ -7,7 +7,7 @@ NPY_CFLAGS=-I$(shell $(PY) -c "from numpy import get_include as i; print(i())") 
 
 %: %.sv
 	-$(VERI) --trace -cc $@ --exe $@.cpp $(NICOTB)/cpp/nicotb_verilator_c.so \
-	 -CFLAGS "-g $(NPY_CFLAGS) -I$(NICOTB)/cpp"
+	 -CFLAGS "--std=c++11 $(NPY_CFLAGS) -I$(NICOTB)/cpp"
 	make $(MKFLAG) -C obj_dir -f V$@.mk
 	cp ./obj_dir/V$@ .
 	GLOG_logtostderr=1 \

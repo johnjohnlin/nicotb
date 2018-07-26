@@ -16,7 +16,6 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb.common import *
 from nicotb_bridge import BindBus, ReadBus, WriteBus
-from typing import Union, Tuple, Iterable, Any
 from collections import deque
 import numpy as np
 
@@ -50,7 +49,7 @@ class Signal(object):
 		self._x = x
 
 	@property
-	def value(self) -> np.ndarray:
+	def value(self):
 		"Get the underlying numpy array representing the value(s)"
 		return self._value
 
@@ -60,7 +59,7 @@ class Signal(object):
 			np.copyto(self._value, value)
 
 	@property
-	def x(self) -> np.ndarray:
+	def x(self):
 		"Get the underlying numpy array representing the X value(s)"
 		return self._x
 
@@ -147,7 +146,7 @@ class Bus(object):
 				ss.x = xx
 
 	@property
-	def value(self) -> np.ndarray:
+	def value(self):
 		return self._vs[0]
 
 	@value.setter
@@ -155,7 +154,7 @@ class Bus(object):
 		self.signals[0].value = value
 
 	@property
-	def x(self) -> np.ndarray:
+	def x(self):
 		return self._xs[0]
 
 	@x.setter
@@ -163,7 +162,7 @@ class Bus(object):
 		self.signals[0].x = x
 
 	@property
-	def signal(self) -> Signal:
+	def signal(self):
 		return self.signals[0]
 
 	def __getitem__(self, i):

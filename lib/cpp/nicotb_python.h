@@ -18,6 +18,7 @@
 #include <glog/logging.h>
 #include <numpy/ndarraytypes.h>
 #include <Python.h>
+#include <numpy/ndarraytypes.h>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
