@@ -18,6 +18,10 @@ from nicotb import *
 from nicotb.utils import RandProb
 from itertools import repeat
 
+def _RandomLengthIt(A, B):
+	while not RandProb(A, B):
+		yield
+
 class Master(Receiver):
 	__slots__ = ["valid", "data", "clk", "A", "B", "strict"]
 	def __init__(
@@ -51,7 +55,7 @@ class Master(Receiver):
 	def SendIter(self, it, latency=None):
 		if latency is None:
 			# random drive
-			litit = repeat(map(lambda _: not RandProb(self.A, self.B), repeat(None)))
+			litit = map(_RandomLengthIt, repeat(self.A), repeat(self.B))
 		else:
 			try:
 				# programmable spacing
