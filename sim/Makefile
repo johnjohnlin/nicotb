@@ -1,4 +1,4 @@
-NICOTB=../../lib
+NICOTB=$(shell pwd)/../../lib
 IRUN=irun
 
 %: %.sv

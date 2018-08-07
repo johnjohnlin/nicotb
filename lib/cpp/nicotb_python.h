@@ -97,7 +97,7 @@ static inline const char *GetEnv(const char *name)
 {
 	using namespace google;
 	const char *value = getenv(name);
-	LOG_IF(FATAL, value == nullptr) << "Environment variable" << name << " not set";
+	CHECK(value != nullptr) << "Environment variable " << name << " not set";
 	return value;
 }
 

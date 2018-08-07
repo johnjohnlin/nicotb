@@ -1,0 +1,36 @@
+NICOTB=$(shell pwd)/../../lib
+VERI=verilator
+PY=python
+MKFLAG=-j
+NPY_CFLAGS=-I$(shell $(PY) -c "from numpy import get_include as i; print(i())") \
+           $(shell $(PY)-config --includes) -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+
+%: %.sv
+	-$(VERI) -cc $@ --exe $@.cpp $(NICOTB)/cpp/nicotb_verilator_c.so \
+	 -CFLAGS "-g $(NPY_CFLAGS) -I$(NICOTB)/cpp"
+	 make $(MKFLAG) -C obj_dir -f V$@.mk
+	cp ./obj_dir/V$@ .
+	GLOG_logtostderr=1 \
+	GLOG_minloglevel=1 \
+	PYTHONPATH=$(NICOTB)/python:`pwd` \
+	TEST=$(if $(TEST),$(TEST),$@) \
+	./V$@
+
+clean:
+	rm -rf obj_dir
+
+dump_scoreboard:
+	@echo -e \
+	".open scoreboard.db\n"\
+	".header on\n"\
+	".mode column\n"\
+	".print ===============\n"\
+	".print All Scoreboards\n"\
+	".print ===============\n"\
+	"select * from Scoreboard;\n"\
+	".print\n"\
+	".print =========\n"\
+	".print All Tests\n"\
+	".print =========\n"\
+	"select * from Tests;\n"\
+	 | sqlite3

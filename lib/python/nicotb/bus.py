@@ -236,9 +236,11 @@ def CreateBus(signals):
 	buses.append(bus)
 	# Prepare for the C++ part
 	grps = list()
+	# TOP_PREFIX is empty in Verilator mode
 	cur_hier = TOP_PREFIX
 	for hier, sig, shape, nptype in signals:
-		if not hier is None:
+		# Never set hierarchy in Verilator mode
+		if not hier is None and bool(TOP_PREFIX):
 			cur_hier = TOP_PREFIX + hier + '.' if hier else TOP_PREFIX
 		grps.append(((cur_hier+sig).encode(), shape))
 	BindBus(grps)

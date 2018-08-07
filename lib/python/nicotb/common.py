@@ -18,4 +18,8 @@ from os import environ
 import numpy as np
 
 SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
-TOP_PREFIX = environ.get("TOPMODULE") + "."
+TOP_PREFIX = environ.get("TOPMODULE")
+if TOP_PREFIX is None:
+	TOP_PREFIX = str()
+else:
+	TOP_PREFIX += "."

@@ -184,7 +184,7 @@ static void ImportTest()
 	p_set_event = PyObject_GetAttrString(p_test_module, "SignalEvent");
 	p_main_loop = PyObject_GetAttrString(p_test_module, "MainLoop");
 	p_update_write = PyObject_GetAttrString(p_test_module, "FlushBusWrite");
-	LOG_IF(FATAL, p_set_event == nullptr or p_main_loop == nullptr or p_update_write == nullptr) <<
+	CHECK(p_set_event != nullptr and p_main_loop != nullptr and p_update_write != nullptr) <<
 		"Cannot find necessary functions, did you from nicotb import * in your code?";
 	Py_DECREF(p_module_name);
 }
