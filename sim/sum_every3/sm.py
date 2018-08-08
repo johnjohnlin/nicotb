@@ -54,6 +54,7 @@ def main():
 	for i in range(10):
 		yield ck_ev
 	assert st.is_clean
+	FinishSim()
 
 src_val, dst_val, src_dat, dst_dat = CreateBuses([
 	("i_dval",),

@@ -21,6 +21,9 @@
 #include <vector>
 
 namespace Nicotb {
+
+extern bool nicotb_fin_wire;
+
 namespace Verilator {
 
 using namespace std;
@@ -32,7 +35,6 @@ void Init();
 static inline void Final() { Nicotb::Python::Final(); }
 static inline bool UpdateWrite() { return Nicotb::Python::UpdateWrite(); }
 static inline bool TriggerEvent(size_t i) { return Nicotb::Python::TriggerEvent(i); }
-extern bool nicotb_fin_wire;
 
 template<class T> vector<size_t> ArraySize(T)
 {

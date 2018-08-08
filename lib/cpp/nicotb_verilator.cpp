@@ -76,7 +76,7 @@ static void ExtractSignal(vector<SignalHandle> &handles, const vector<int> &d, c
 	handles.resize(handles.size() + src.size());
 	auto it_dst = handles.end() - src.size();
 	for (auto &h: src) {
-		LOG(INFO) << "Index " << h << " of " << hier << " (" << arr_ptr << ") is used.";
+		LOG(INFO) << "Index " << h << " of " << hier << " (" << (void*)arr_ptr << ") is used.";
 		it_dst->first = arr_ptr + h*arr_dsize;
 		it_dst->second = arr_dsize;
 		++it_dst;
