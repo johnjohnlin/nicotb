@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 #include <glog/logging.h>
-#include <numpy/ndarraytypes.h>
 #include <Python.h>
 #include <numpy/ndarraytypes.h>
 #include <cstdlib>
