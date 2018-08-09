@@ -60,7 +60,7 @@ int main()
 			n_sim_cycle = min(cycle + SIM_CYCLE_AFTER_STOP, n_sim_cycle);
 		}
 	}
-	cout << "Simulation stop at timestep " << cycle;
+	cout << "Simulation stop at timestep " << cycle << endl;
 	NiVe::Final();
 	return 0;
 }

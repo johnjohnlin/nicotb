@@ -33,12 +33,12 @@ def main():
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
 	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, bg.Get])
 	values = master.values
-	arr = np.random.randint(16, size=(N*3,2), dtype=np.int32)
+	arr = np.random.randint(16, size=(N*3,2)).astype(np.int32)
 	golden = np.sum(np.reshape(arr, (-1,6)), axis=1, keepdims=1, dtype=np.int32)
 	test1.Expect((golden,)) # must pass
 	# test1.Expect((golden+1,)) # must fail
 	ITER = not getenv("ITER") is None
-	print(f"Iteration mode is set to {ITER}")
+	print("Iteration mode is set to {}".format(ITER))
 	if ITER:
 		def it():
 			for i in arr:
