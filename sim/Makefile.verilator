@@ -1,6 +1,6 @@
 NICOTB=$(shell pwd)/../../lib
 VERI=verilator
-PY=python
+PY=python3
 MKFLAG=-j
 NPY_CFLAGS=-I$(shell $(PY) -c "from numpy import get_include as i; print(i())") \
            $(shell $(PY)-config --includes) -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
