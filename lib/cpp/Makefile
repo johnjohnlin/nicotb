@@ -1,4 +1,4 @@
-PY=python
+PY=python3
 CFLAGS=$(shell $(PY)-config --cflags) -fPIC --std=c++11 -c \
        -I$(shell $(PY) -c "from numpy import get_include as i; print(i())") \
        -DNDEBUG -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
