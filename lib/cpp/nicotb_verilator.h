@@ -63,3 +63,7 @@ template<class T, size_t N> constexpr size_t ArrayDataSize(T (&x)[N])
 
 // define TOP as the pointer before this line
 #define MAP_SIGNAL(name) Nicotb::Verilator::AddSignal(#name, (uint8_t*)&TOP->name, Nicotb::Verilator::ArrayDataSize(TOP->name), Nicotb::Verilator::ArraySize(TOP->name))
+// Alias version
+#define MAP_SIGNAL_ALIAS(name, alias_name) Nicotb::Verilator::AddSignal(#alias_name, (uint8_t*)&TOP->name, Nicotb::Verilator::ArrayDataSize(TOP->name), Nicotb::Verilator::ArraySize(TOP->name))
+// OK, if you don't want your module is named TOP
+#define MAP_SIGNAL_ALIAS_TOP(name, alias_name, top) Nicotb::Verilator::AddSignal(#alias_name, (uint8_t*)&top->name, Nicotb::Verilator::ArrayDataSize(top->name), Nicotb::Verilator::ArraySize(top->name))

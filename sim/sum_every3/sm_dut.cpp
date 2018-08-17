@@ -61,6 +61,7 @@ int main()
 		}
 	}
 	cout << "Simulation stop at timestep " << cycle << endl;
+	tfp->close();
 	NiVe::Final();
 	return 0;
 }
