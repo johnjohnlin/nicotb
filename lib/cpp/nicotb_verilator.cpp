@@ -72,6 +72,7 @@ static void ExtractSignal(vector<SignalHandle> &handles, const vector<int> &d, c
 			}
 		}
 		swap(src, dst);
+		++it_dim;
 	}
 	handles.resize(handles.size() + src.size());
 	auto it_dst = handles.end() - src.size();
