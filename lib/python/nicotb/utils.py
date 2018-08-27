@@ -90,6 +90,9 @@ class Scoreboard(object):
 			if t.err != 0:
 				"There are {} errors in [{}]".format(t.err, t.name)
 				fail = True
+			elif t.ok == 0:
+				"There is nothing to test in [{}]".format(t.name)
+				fail = True
 			print("Status of [{}]: (correct/error): {}/{}".format(
 				t.name,
 				t.ok,
