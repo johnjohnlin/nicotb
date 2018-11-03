@@ -175,18 +175,21 @@ static PyObject* InitBridgeModule()
 	return p_bridge_module;
 }
 
-static void ImportTest()
+static bool ImportTest()
 {
 	PyObject *p_module_name = PyUnicode_FromString(GetEnv("TEST"));
 	p_test_module = PyImport_Import(p_module_name);
 	PyErr_Print();
-	CHECK_NOTNULL(p_test_module);
+	if (p_test_module == nullptr) {
+		return true;
+	}
 	p_set_event = PyObject_GetAttrString(p_test_module, "SignalEvent");
 	p_main_loop = PyObject_GetAttrString(p_test_module, "MainLoop");
 	p_update_write = PyObject_GetAttrString(p_test_module, "FlushBusWrite");
-	CHECK(p_set_event != nullptr and p_main_loop != nullptr and p_update_write != nullptr) <<
+	LOG_IF(ERROR, p_set_event == nullptr or p_main_loop == nullptr or p_update_write == nullptr) <<
 		"Cannot find necessary functions, did you from nicotb import * in your code?";
 	Py_DECREF(p_module_name);
+	return false;
 }
 
 bool UpdateWrite()
@@ -215,7 +218,7 @@ bool TriggerEvent(size_t i)
 	return o1 == nullptr or o2 == nullptr;
 }
 
-void Init()
+bool Init()
 {
 	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
 	Py_Initialize();
@@ -226,15 +229,15 @@ void Init()
 		return 0;
 	};
 	CHECK_EQ(Imp(), 0) << "Import Numpy fails";
+	return false;
 }
 
-void InitTest()
+bool InitTest()
 {
-	ImportTest();
-	PyErr_Print();
+	return ImportTest();
 }
 
-void Final()
+bool Final()
 {
 	PyObject *p_scb = PyObject_GetAttrString(p_test_module, "Scoreboard");
 	if (p_scb != nullptr) {
@@ -246,6 +249,7 @@ void Final()
 	Py_DECREF(p_main_loop);
 	Py_DECREF(p_bridge_module);
 	Py_DECREF(p_test_module);
+	return false;
 }
 
 } // namespace Python

@@ -132,7 +132,11 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 
 static PLI_INT32 Init(PLI_BYTE8 *args)
 {
-	Python::InitTest();
+	vpiHandle systfref;
+	struct t_vpi_value argval;
+	systfref = vpi_handle(vpiSysTfCall, nullptr);
+	argval.value.integer = Python::InitTest();
+	vpi_put_value(systfref, &argval, nullptr, vpiNoDelay);
 	return 0;
 }
 
