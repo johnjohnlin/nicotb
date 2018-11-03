@@ -72,9 +72,10 @@ public:
 
 namespace Python {
 
-void Init();
-void InitTest();
-void Final();
+// return true on fails
+bool Init();
+bool InitTest();
+bool Final();
 bool UpdateWrite();
 bool TriggerEvent(size_t i);
 // VPI must implement these functions

@@ -42,3 +42,5 @@
 		$NicotbFinal; \
 		$finish; \
 	end
+`define NicotbInit if ($NicotbInit()) $finish
+`define NicotbFinal $NicotbFinal()
