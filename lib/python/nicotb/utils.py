@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -22,7 +22,13 @@ from datetime import datetime
 import numpy as np
 
 def DefaultFormator(expect, get):
-	return "Expected:\n{}\nGot:\n{}".format(expect, get)
+	ret = str()
+	for i, (e, g) in enumerate(zip(expect, get)):
+		if np.array_equal(e, g):
+			ret += f"Pair {i} equal.\n"
+		else:
+			ret += f"Pair {i} not equal.\nExpected:\n{e}\nGot:\n{g}\n"
+	return ret
 
 class Scoreboard(object):
 	scoreboards = list()
@@ -175,7 +181,11 @@ class BusGetter(Receiver):
 		self.copy = copy
 
 	def Get(self, bus):
-		assert all(not np.any(xval) for xval in bus.xs), "Bus has unknown values"
+		unknowns = list()
+		for i, xval in enumerate(bus.xs):
+			if np.any(xval):
+				unknowns.append(str(i))
+		assert len(unknowns) == 0, "Bus has unknown values at position {}".format(",".join(unknowns))
 		super(BusGetter, self).Get(bus.values.Copy() if self.copy else bus.values)
 
 class Stacker(Receiver):

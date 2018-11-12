@@ -116,7 +116,6 @@ class Bus(object):
 	__slots__ = ["idx", "_vs", "_xs", "signals"]
 
 	def __init__(self, idx, vs, xs):
-		# s[1] is the wire name
 		self.idx = idx
 		self._vs = vs
 		self._xs = xs
