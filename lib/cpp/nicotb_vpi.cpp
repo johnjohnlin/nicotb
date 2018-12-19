@@ -177,9 +177,9 @@ extern "C" void VpiBoot()
 	using namespace Nicotb::Vpi;
 	static s_vpi_systf_data tasks[] = {
 		{vpiSysFunc, vpiIntFunc, "$NicotbTriggerEvent", TriggerEvent, nullptr, nullptr, nullptr},
-		{vpiSysTask, vpiSysTask, "$NicotbUpdateWrite", UpdateWrite, nullptr, nullptr, nullptr},
-		{vpiSysTask, vpiSysTask, "$NicotbInit", Init, nullptr, nullptr, nullptr},
-		{vpiSysTask, vpiSysTask, "$NicotbFinal", Final, nullptr, nullptr, nullptr}
+		{vpiSysFunc, vpiSysFunc, "$NicotbUpdateWrite", UpdateWrite, nullptr, nullptr, nullptr},
+		{vpiSysFunc, vpiSysFunc, "$NicotbInit", Init, nullptr, nullptr, nullptr},
+		{vpiSysFunc, vpiSysFunc, "$NicotbFinal", Final, nullptr, nullptr, nullptr}
 	};
 	for (auto&& task: tasks) {
 		vpi_register_systf(&task);
