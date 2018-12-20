@@ -25,9 +25,9 @@ def DefaultFormator(expect, get):
 	ret = str()
 	for i, (e, g) in enumerate(zip(expect, get)):
 		if np.array_equal(e, g):
-			ret += f"Pair {i} equal.\n"
+			ret += "Pair {} equal.\n".format(i)
 		else:
-			ret += f"Pair {i} not equal.\nExpected:\n{e}\nGot:\n{g}\n"
+			ret += "Pair {} not equal.\nExpected:\n{}\nGot:\n{}\n".format(i, e, g)
 	return ret
 
 class Scoreboard(object):
