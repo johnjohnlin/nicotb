@@ -9,7 +9,7 @@ LDFLAGS=$(shell $(PY)-config --ldflags) -lglog -shared
 all: verilator_c vpi
 
 verilator_c: nicotb_verilator.o nicotb_python.o
-	g++ $^ $(LDFLAGS) -o nicotb_verilator_c.so
+	g++ $^ $(LDFLAGS) -o nicotb_verilator.so
 
 vpi: nicotb_vpi.o nicotb_python.o
 	g++ $^ $(LDFLAGS) -o nicotb.so
