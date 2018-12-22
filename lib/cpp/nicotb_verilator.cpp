@@ -72,6 +72,7 @@ static void ExtractSignal(vector<SignalHandle> &handles, const vector<int> &d, c
 			}
 		}
 		swap(src, dst);
+		++it_dim;
 	}
 	handles.resize(handles.size() + src.size());
 	auto it_dst = handles.end() - src.size();
@@ -117,7 +118,7 @@ void WriteBusExt(const size_t i, ValueIterProxy &&values_proxy)
 {
 	// FIXME: Workaround for matching FinishSim() in Python
 	if (nicotb_fin_wire) {
-		LOG(INFO) << "FinishSim is called(), disabling the WriteBus().";
+		LOG_FIRST_N(INFO, 1) << "FinishSim is called(), disabling the WriteBus().";
 		return;
 	}
 	auto it = registered_handles[i].begin(), it_end = registered_handles[i].end();
