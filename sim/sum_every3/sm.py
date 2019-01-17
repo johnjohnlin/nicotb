@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -25,7 +25,7 @@ N = 10
 
 def main():
 	scb = Scoreboard()
-	test1 = scb.GetTest("test1")
+	test1 = scb.GetTest("test1", squeeze=True)
 	st = Stacker(N, callbacks=[test1.Get, lambda x: print("Print with name: {}".format(x.o))])
 	bg = BusGetter(callbacks=[st.Get])
 	yield rs_ev
@@ -34,7 +34,7 @@ def main():
 	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, bg.Get])
 	values = master.values
 	arr = np.random.randint(16, size=(N*3,2)).astype(np.int32)
-	golden = np.sum(np.reshape(arr, (-1,6)), axis=1, keepdims=1, dtype=np.int32)
+	golden = np.sum(np.reshape(arr, (-1,6)), axis=1, dtype=np.int32)
 	test1.Expect((golden,)) # must pass
 	# test1.Expect((golden+1,)) # must fail
 	ITER = not getenv("ITER") is None
