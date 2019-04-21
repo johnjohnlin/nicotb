@@ -16,51 +16,31 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import *
 
-class AllEvent(object):
-	def __init__(self, events):
-		raise NotImplementedError()
-		self._event = CreateEvent()
-		self.events = events
-
-	@property
-	def event(self):
-		events = set(event, self.events)
-		for ev in self.events:
-			Fork(self._wrap(events, event, self._event))
-		return self._event
-
-	@staticmethod
-	def _wrap(events, event, trigger_on_fin):
+def AllEvent(events):
+	temp_event = CreateEvent()
+	events = set(events)
+	def wrap(event):
 		yield event
 		events.discard(event)
 		if not events:
-			SignalEvent(trigger_on_fin)
+			SignalEvent(temp_event)
+	for e in events:
+		Fork(wrap(e))
+	yield temp_event
+	DestroyEvent(temp_event)
 
-	def Destroy(self):
-		DestroyEvent(self._event)
-
-class AnyEvent(object):
-	def __init__(self, events):
-		raise NotImplementedError()
-		self._event = CreateEvent()
-		self.events = events
-
-	@property
-	def event(self):
-		flag = [None]
-		for ev in self.events:
-			Fork(self._wrap(flag, ev, self._event))
-		return self._event
-
-	@staticmethod
-	def _wrap(flag, event, trigger_on_fin):
+def AnyEvent(events):
+	temp_event_ref = [CreateEvent()]
+	events = set(events)
+	def wrap(event):
 		yield event
-		if flag:
-			flag.clear()
-			SignalEvent(trigger_on_fin)
-
-	def Destroy(self):
-		DestroyEvent(self._event)
+		if temp_event_ref:
+			SignalEvent(temp_event_ref[0])
+	for e in set(events):
+		Fork(wrap(e))
+	yield temp_event_ref[0]
+	DestroyEvent(temp_event_ref[0])
+	temp_event_ref.pop()
 
 class JoinableFork(object):
 	__slots__ = ("fin", "coro", "_event")
