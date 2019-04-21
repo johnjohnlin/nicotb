@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -15,7 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb.common import *
-from nicotb_bridge import BindEvent
+try:
+	from nicotb_bridge import BindEvent
+	COSIM = True
+except ImportError:
+	COSIM = False
 from collections import deque
 
 event_released = set()
@@ -24,7 +28,7 @@ event_queue = deque()
 
 def CreateEvent(hier: str = ""):
 	n = len(waiting_coro)
-	if len(hier):
+	if COSIM and hier:
 		BindEvent(n, (TOP_PREFIX+hier).encode())
 	waiting_coro.append(list())
 	return n

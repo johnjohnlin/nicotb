@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -14,10 +14,14 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-from nicotb.bus import *
+try:
+	from nicotb.bus import *
+	COSIM = True
+except ImportError:
+	COSIM = False
 from nicotb.event import *
 
-__all__ = [
+__all__ = ([
 	# bus
 	"Signal",
 	"Bus",
@@ -25,6 +29,7 @@ __all__ = [
 	"CreateBuses",
 	"GetBus",
 	"FlushBusWrite",
+] if COSIM else list()) + [
 	# signal
 	"CreateEvent",
 	"CreateEvents",
