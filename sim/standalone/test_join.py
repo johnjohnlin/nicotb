@@ -1,4 +1,5 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+#!/usr/bin/env python
+# Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -16,43 +17,37 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
+from nicotb.utils import Scoreboard
 from nicotb.primitives import JoinableFork
-from nicotb.protocol import OneWire
+from nicotb.event import waiting_coro
 import numpy as np
 
-N = 10
+def WaitCycles(n):
+	for i in range(n):
+		yield ck_ev
 
 def main():
-	def it(v, n):
-		for i in range(n):
-			v[0][0] = i
-			yield v
-	yield rs_ev
-	master1 = OneWire.Master(dval1_bus, d1_bus, ck_ev, callbacks=[print], A=4)
-	master2 = OneWire.Master(dval2_bus, d2_bus, ck_ev, callbacks=[print], A=4)
-
-	values1 = master1.values
-	values2 = master2.values
-	for t1, t2 in [[5,10], [10,5]]:
-		th_fin1 = JoinableFork(master1.SendIter(it(values1, t1)))
-		th_fin2 = JoinableFork(master2.SendIter(it(values2, t2)))
+	scb = Scoreboard("Join")
+	tst = scb.GetTest("test")
+	tst.Expect([])
+	for t1, t2 in [[5,10], [10,5], [5,5]]:
+		th_fin1 = JoinableFork(WaitCycles(t1))
+		th_fin2 = JoinableFork(WaitCycles(t2))
 		yield from th_fin1.Join()
 		yield from th_fin2.Join()
-		print("Finish")
 		# will cause small leak if you do not destroy them
 		th_fin1.Destroy()
 		th_fin2.Destroy()
-		for i in range(30):
-			yield ck_ev
-	print("All done")
+	tst.Get([])
+	scb.ReportAll()
 
-dval1_bus, dval2_bus, d1_bus, d2_bus = CreateBuses([
-	("dval1",),
-	("dval2",),
-	("d1"   ,),
-	("d2"   ,),
-])
-ck_ev, rs_ev = CreateEvents(["ck_ev", "rst_out"])
+ck_ev = CreateEvent()
 RegisterCoroutines([
 	main(),
 ])
+for i in range(1000):
+	SignalEvent(ck_ev)
+	MainLoop()
+	if not waiting_coro[ck_ev]:
+		break
+print("Simulation stop at {}".format(i))

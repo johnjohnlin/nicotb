@@ -1,4 +1,5 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+#!/usr/bin/env python
+# Copyright (C) 2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -16,39 +17,33 @@
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
 from nicotb import *
-from nicotb.primitives import Semaphore
+from nicotb.utils import Scoreboard
+from nicotb.primitives import Lock
+from nicotb.event import waiting_coro
 import numpy as np
 
-def f0():
-	print("f0")
-	global cnt
-	while True:
-		cnt += 1
-		yield clk_ev
-
-def f1():
-	print("f1")
+def competitor(idx):
+	global resource
 	for i in range(10):
-		for j in range(1+np.random.randint(20)):
-			yield clk_ev
-		print("Rel?")
-		yield from sem.Release()
-		print(f"Rel {sem.n}")
+		yield from lck.Acquire()
+		resource = idx
+		for j in range(1+np.random.randint(3)):
+			yield ck_ev
+			assert resource == idx
+		lck.Release()
 
-def f2():
-	print("f2")
-	for i in [1,2,3,4]:
-		for j in range(1+np.random.randint(10)):
-			yield clk_ev
-		print("Acq?")
-		yield from sem.Acquire(i)
-		print(f"Acq {sem.n}")
-
-clk_ev = CreateEvent("ck_ev")
-cnt = 0
-sem = Semaphore(-1)
-RegisterCoroutines([
-	f0(),
-	f1(),
-	f2(),
-])
+ck_ev = CreateEvent()
+resource = 0
+lck = Lock()
+RegisterCoroutines([competitor(i) for i in range(5)])
+scb = Scoreboard("Lock")
+tst = scb.GetTest("test")
+tst.Expect([])
+for i in range(1000):
+	SignalEvent(ck_ev)
+	MainLoop()
+	if not waiting_coro[ck_ev]:
+		break
+tst.Get([])
+scb.ReportAll()
+print("Simulation stop at {}".format(i))

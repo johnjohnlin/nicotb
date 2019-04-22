@@ -67,13 +67,10 @@ class Lock(object):
 		self.locked = locked
 		self._event = CreateEvent()
 
-	@property
-	def acquire(self):
-		if self.locked:
-			return self._event
-		else:
-			self.locked = True
-			return None
+	def Acquire(self):
+		while self.locked:
+			yield self._event
+		self.locked = True
 
 	def Release(self):
 		self.locked = False

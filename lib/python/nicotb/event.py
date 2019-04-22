@@ -27,10 +27,13 @@ waiting_coro = list()
 event_queue = deque()
 
 def CreateEvent(hier: str = ""):
-	n = len(waiting_coro)
+	if event_released:
+		n = event_released.pop()
+	else:
+		n = len(waiting_coro)
+		waiting_coro.append(list())
 	if COSIM and hier:
 		BindEvent(n, (TOP_PREFIX+hier).encode())
-	waiting_coro.append(list())
 	return n
 
 def CreateEvents(descs: list):
@@ -43,6 +46,7 @@ def SignalEvent(ev, all_ev=True):
 	event_queue.append((ev, all_ev))
 
 def DestroyEvent(ev: int):
+	# Do not destroy events created with hier name
 	waiting_coro[ev] = list()
 	event_released.add(ev)
 

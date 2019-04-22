@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb import Receiver
-from nicotb.bus import SignalTuple
+try:
+	from nicotb.bus import SignalTuple
+except ImportError:
+	pass
 from collections import deque
 import sqlite3 as sql
 from datetime import datetime
