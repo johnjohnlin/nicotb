@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -23,7 +23,7 @@ def rst_out_cb1():
 	yield rst_out
 	print("reset out")
 	yield rst_out
-	print("this should not happen")
+	assert 0, "this should not happen"
 
 def rst_out_cb2():
 	yield rst_out
