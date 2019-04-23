@@ -19,10 +19,12 @@ int main()
 	// TOP is the default name of our macro
 	unique_ptr<TopType> TOP(new TopType);
 	TOP->eval();
-	MAP_SIGNAL(i_dval);
-	MAP_SIGNAL(o_dval);
-	MAP_SIGNAL(i);
-	MAP_SIGNAL(o);
+	MAP_SIGNAL(irdy);
+	MAP_SIGNAL(iack);
+	MAP_SIGNAL(iint);
+	MAP_SIGNAL(ordy);
+	MAP_SIGNAL(ocanack);
+	MAP_SIGNAL(oint);
 
 	// Init events
 	NiVe::AddEvent("ck_ev");
@@ -33,7 +35,7 @@ int main()
 	unique_ptr<VerilatedVcdC> tfp(new VerilatedVcdC);
 	Verilated::traceEverOn(true);
 	TOP->trace(tfp.get(), 99);
-	tfp->open ("sm_dut.vcd");
+	tfp->open ("tb.vcd");
 
 	// Simulation
 #define Eval TOP->eval();NiVe::UpdateWrite();tfp->dump(sim_time++)

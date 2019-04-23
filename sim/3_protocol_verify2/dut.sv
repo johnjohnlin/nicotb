@@ -21,9 +21,17 @@ module Dut(
 	output logic        iack,
 	input        [10:0] iint,
 	output logic        ordy,
+`ifdef VERILATOR
+	input               ocanack,
+`else
 	input               oack,
+`endif
 	output logic [10:0] oint
 );
+`ifdef VERILATOR
+logic oack;
+assign oack = ocanack && ordy;
+`endif
 
 logic ordy_w;
 logic [10:0] oint_w;
