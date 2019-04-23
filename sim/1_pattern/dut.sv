@@ -1,4 +1,4 @@
-// Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -14,32 +14,26 @@
 
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-`timescale 1ns/1ns
-`include "dut.sv"
-module tb;
 
-logic clk, rst;
-logic [ 3:0] a;
-logic [10:0] b  [3][2][4];
-logic [10:0] c  [2][4];
-`Pos(rst_out, rst)
-`PosIf(ck_ev, clk, rst)
+module dut(
+	input  logic clk,
+	input  logic rst,
+	output logic [7:0] character
+);
 
-always #1 clk = ~clk;
-initial begin
-	$fsdbDumpfile("tb.fsdb");
-	$fsdbDumpvars(0, tb, "+mda");
-	clk = 0;
-	rst = 1;
-	a = 0;
-	#1 $NicotbInit();
-	#10 rst = 0;
-	#10 rst = 1;
-	#100
-	$NicotbFinal();
-	$finish;
+localparam LEN = 25;
+logic [(8*LEN)-1:0] characters;
+assign characters = "AABABA__JUSTMONIKA__CDEDE";
+
+int i;
+always_ff @(posedge clk or negedge rst) begin
+	if (!rst) begin
+		i <= 0;
+		character <= 0;
+	end else if (i < LEN) begin
+		i <= i+1;
+		character <= characters[8*(LEN-i)-1 -: 8];
+	end
 end
-
-dut u_dut(clk, rst, a, b, c);
 
 endmodule

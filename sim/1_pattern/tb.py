@@ -19,8 +19,8 @@ from nicotb import *
 import numpy as np
 
 def main():
-	pattern = [ord(c) for c in "JUST"]
-	n_trail = 6
+	# If we find string "JUSTMONIKA", then finish the simulation
+	pattern = [ord(c) for c in "JUSTMONIKA"]
 	match_idx = 0
 	yield rst_out
 	while True:
@@ -32,12 +32,8 @@ def main():
 				break
 		else:
 			match_idx = 0
-	s = str()
-	for i in range(n_trail):
-		yield clk
-		bus.Read()
-		s += chr(bus.character.value[0])
-	print(s)
+	yield clk
+	FinishSim()
 
 bus = CreateBus((
 	(""  , "character"),

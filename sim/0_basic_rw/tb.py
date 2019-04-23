@@ -18,22 +18,26 @@
 from nicotb import *
 import numpy as np
 
+checkpoint = [False]*3
 def rst_out_cb1():
 	print("reset wait")
+	checkpoint[0] = True
 	yield rst_out
 	print("reset out")
+	checkpoint[1] = True
 	yield rst_out
-	assert 0, "this should not happen"
+	assert 0, "This should not happen"
 
 def rst_out_cb2():
 	yield rst_out
 	print("reset out 2")
+	checkpoint[2] = True
 
 def clk_cb():
 	cbbus.SetToX()
 	cbbus[0].x[1,1] = 0
 	yield rst_out
-	while True:
+	for i in range(50):
 		yield clk
 		abus.Read()
 		if abus.is_number:
@@ -41,6 +45,8 @@ def clk_cb():
 		else:
 			cbbus.SetToX()
 		cbbus.Write()
+	assert(all(checkpoint))
+	FinishSim()
 
 cbbus, abus = CreateBuses([
 	(

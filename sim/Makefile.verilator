@@ -5,16 +5,16 @@ MKFLAG=-j
 NPY_CFLAGS=-I$(shell $(PY) -c "from numpy import get_include as i; print(i())") \
            $(shell $(PY)-config --includes) -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 
-%: %.sv
-	-$(VERI) --trace -cc $@ --exe $@.cpp $(NICOTB)/cpp/nicotb_verilator.so \
+all: dut.sv tb.py tb.cpp
+	-$(VERI) --trace -cc dut.sv --exe tb.cpp $(NICOTB)/cpp/nicotb_verilator.so \
 	 -CFLAGS "-g --std=c++11 $(NPY_CFLAGS) -I$(NICOTB)/cpp"
-	make $(MKFLAG) -C obj_dir -f V$@.mk
-	cp ./obj_dir/V$@ .
+	make $(MKFLAG) -C obj_dir -f Vdut.mk
+	cp ./obj_dir/Vdut .
 	GLOG_logtostderr=1 \
 	GLOG_minloglevel=0 \
 	PYTHONPATH=$(NICOTB)/python:`pwd` \
-	TEST=$(if $(TEST),$(TEST),$@) \
-	./V$@
+	TEST=tb \
+	./Vdut
 
 clean:
 	rm -rf obj_dir
