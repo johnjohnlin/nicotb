@@ -1,4 +1,4 @@
-# Copyright (C) 2017, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -14,12 +14,21 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-from os import environ
+from os import getenv
 import numpy as np
 
 SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
-TOP_PREFIX = environ.get("TOPMODULE")
+TOP_PREFIX = getenv("TOPMODULE")
 if TOP_PREFIX is None:
 	TOP_PREFIX = str()
 else:
 	TOP_PREFIX += "."
+NICOTB_MODE = getenv("NICOTB_MODE")
+if NICOTB_MODE == "VPI":
+	from bridge_vpi import BindBus, ReadBus, WriteBus, BindEvent
+	COSIM = True
+elif NICOTB_MODE == "VERILATOR":
+	from bridge_verilator import BindBus, ReadBus, WriteBus, BindEvent
+	COSIM = True
+else:
+	COSIM = False

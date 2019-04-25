@@ -3,7 +3,7 @@ dist: trusty
 before_install:
     - sudo apt-get install -y git make g++ python3 python3-numpy python3-dev libgoogle-glog-dev verilator
 script:
-    - make -C ./lib/cpp
+    - python3 setup.py install --user
     - cd sim
     - ./test_all_verilator.sh
     - cd standalone

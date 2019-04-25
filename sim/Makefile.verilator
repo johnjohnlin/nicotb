@@ -1,20 +1,17 @@
-NICOTB=$(shell pwd)/../../lib
+NICOTB=$(shell $(PY) -c "import nicotb; print(nicotb.__path__[0])")
 VERI=verilator
 PY=python3
-MKFLAG=-j
-NPY_CFLAGS=-I$(shell $(PY) -c "from numpy import get_include as i; print(i())") \
-           $(shell $(PY)-config --includes) -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+CFLAGS=-g --std=c++11 -I$(NICOTB)/cpp -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION \
+	$(shell $(PY)-config --includes) \
+	-I$(shell $(PY) -c "from numpy import get_include as i; print(i())")
+PY_SUFFIX=$(shell $(PY) -c "from distutils.sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))")
+BRIDGE_SO=$(NICOTB)/bridge_verilator$(PY_SUFFIX)
 
 all: dut.sv tb.py tb.cpp
-	-$(VERI) --trace -cc dut.sv --exe tb.cpp $(NICOTB)/cpp/nicotb_verilator.so \
-	 -CFLAGS "-g --std=c++11 $(NPY_CFLAGS) -I$(NICOTB)/cpp"
+	-$(VERI) --trace -cc dut.sv --exe tb.cpp $(BRIDGE_SO) -CFLAGS "$(CFLAGS)"
 	make $(MKFLAG) -C obj_dir -f Vdut.mk
 	cp ./obj_dir/Vdut .
-	GLOG_logtostderr=1 \
-	GLOG_minloglevel=0 \
-	PYTHONPATH=$(NICOTB)/python:`pwd` \
-	TEST=tb \
-	./Vdut
+	PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VERILATOR TEST=tb ./Vdut
 
 clean:
 	rm -rf obj_dir

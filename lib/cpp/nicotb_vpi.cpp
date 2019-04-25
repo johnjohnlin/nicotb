@@ -14,7 +14,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-#include "vpi_user.h"
+#include "vpi/vpi_user.h"
 #include "nicotb_python.h"
 #include <fstream>
 

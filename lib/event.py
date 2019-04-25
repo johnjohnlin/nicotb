@@ -15,11 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb.common import *
-try:
-	from nicotb_bridge import BindEvent
-	COSIM = True
-except ImportError:
-	COSIM = False
 from collections import deque
 
 event_released = set()

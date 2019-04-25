@@ -57,7 +57,7 @@ class Master(Receiver):
 				if self.VVALID[y] and self.HVALID[x]:
 					self.data.SetToNumber()
 					self.data.values = next(it)
-				else if self.strict:
+				elif self.strict:
 					self.data.SetToX()
 				self.hsync.Write()
 				self.vsync.Write()

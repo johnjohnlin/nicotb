@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 # This file is part of Nicotb.
 
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 from nicotb.common import *
-from nicotb_bridge import BindBus, ReadBus, WriteBus
+from os import getenv
 from collections import deque
 import numpy as np
 
