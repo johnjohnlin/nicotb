@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -167,7 +167,8 @@ static PyObject* InitBridgeModule()
 	};
 	static PyModuleDef nicotb_bridge_module = {
 		PyModuleDef_HEAD_INIT,
-		"nicotb_bridge", nullptr, -1,
+		NICOTB_MODULE_NAME,
+		nullptr, -1,
 		nicotb_bridge_methods,
 		nullptr, nullptr, nullptr, nullptr
 	};
@@ -220,7 +221,7 @@ bool TriggerEvent(size_t i)
 
 bool Init()
 {
-	PyImport_AppendInittab("nicotb_bridge", InitBridgeModule);
+	PyImport_AppendInittab(NICOTB_MODULE_NAME, InitBridgeModule);
 	Py_Initialize();
 	auto Imp = []() -> int {
 		// this is required for each compile unit
