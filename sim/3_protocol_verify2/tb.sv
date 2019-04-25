@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 `timescale 1ns/1ns
-`include "cnt_dut.sv"
+`include "dut.sv"
 
-module cnt;
+module tb;
 
 logic clk, rst;
 logic [10:0] iint, oint;
@@ -29,8 +29,8 @@ logic ordy, oack, ocanack;
 
 always #1 clk = ~clk;
 initial begin
-	$fsdbDumpfile("cnt.fsdb");
-	$fsdbDumpvars(0, cnt, "+mda");
+	$fsdbDumpfile("tb.fsdb");
+	$fsdbDumpvars(0, tb, "+mda");
 	clk = 0;
 	rst = 1;
 	#1 $NicotbInit();

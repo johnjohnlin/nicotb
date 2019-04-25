@@ -25,6 +25,7 @@ logic [(8*LEN)-1:0] characters;
 assign characters = "AABABA__JUSTMONIKA__CDEDE";
 `Pos(rst_out, rst)
 `PosIf(ck_ev, clk, rst)
+`WithFinish
 
 always #1 clk = ~clk;
 initial begin

@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -133,8 +133,9 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 static PLI_INT32 Init(PLI_BYTE8 *args)
 {
 	vpiHandle systfref;
-	struct t_vpi_value argval;
+	s_vpi_value argval;
 	systfref = vpi_handle(vpiSysTfCall, nullptr);
+	argval.format = vpiIntVal;
 	argval.value.integer = Python::InitTest();
 	vpi_put_value(systfref, &argval, nullptr, vpiNoDelay);
 	return 0;
@@ -155,7 +156,7 @@ static PLI_INT32 UpdateWrite(PLI_BYTE8 *args)
 static PLI_INT32 TriggerEvent(PLI_BYTE8 *args)
 {
 	vpiHandle systfref, args_iter, argh;
-	struct t_vpi_value argval;
+	s_vpi_value argval;
 	systfref = vpi_handle(vpiSysTfCall, nullptr);
 	args_iter = vpi_iterate(vpiArgument, systfref);
 	argh = vpi_scan(args_iter);

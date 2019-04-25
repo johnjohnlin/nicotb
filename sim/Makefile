@@ -1,12 +1,13 @@
-NICOTB=$(shell pwd)/../../lib
+PY=python3
+NICOTB=$(shell $(PY) -c "import nicotb; print(nicotb.__path__[0])")
+PY_SUFFIX=$(shell $(PY) -c "from distutils.sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))")
+BRIDGE_SO=$(NICOTB)/bridge_vpi$(PY_SUFFIX)
 IRUN=irun
 
-%: %.sv
-	GLOG_logtostderr=1 \
-	TEST=$(if $(TEST),$(TEST),$@) \
-	TOPMODULE=$(if $(TOPMODULE),$(TOPMODULE),$@) \
-	PYTHONPATH=$(NICOTB)/python:`pwd` \
-	$(IRUN) +access+rw -loadvpi $(NICOTB)/cpp/nicotb.so:VpiBoot $(NICOTB)/verilog/Utils.sv $<
+all: dut.sv tb.sv tb.py
+	PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VPI \
+	TEST=tb TOPMODULE=tb \
+	$(IRUN) +access+rw -loadvpi $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
 
 dump_scoreboard:
 	@echo -e \

@@ -18,11 +18,6 @@ from os import getenv
 import numpy as np
 
 SUPPORT_NP_TYPES = [np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,]
-TOP_PREFIX = getenv("TOPMODULE")
-if TOP_PREFIX is None:
-	TOP_PREFIX = str()
-else:
-	TOP_PREFIX += "."
 NICOTB_MODE = getenv("NICOTB_MODE")
 if NICOTB_MODE == "VPI":
 	from bridge_vpi import BindBus, ReadBus, WriteBus, BindEvent
@@ -32,3 +27,8 @@ elif NICOTB_MODE == "VERILATOR":
 	COSIM = True
 else:
 	COSIM = False
+TOP_PREFIX = getenv("TOPMODULE")
+if NICOTB_MODE == "VERILATOR" or TOP_PREFIX is None:
+	TOP_PREFIX = str()
+else:
+	TOP_PREFIX += "."

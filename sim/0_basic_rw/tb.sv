@@ -24,6 +24,7 @@ logic [10:0] b  [3][2][4];
 logic [10:0] c  [2][4];
 `Pos(rst_out, rst)
 `PosIf(ck_ev, clk, rst)
+`WithFinish
 
 always #1 clk = ~clk;
 initial begin
@@ -31,7 +32,6 @@ initial begin
 	$fsdbDumpvars(0, tb, "+mda");
 	clk = 0;
 	rst = 1;
-	a = 0;
 	#1 $NicotbInit();
 	#10 rst = 0;
 	#10 rst = 1;
