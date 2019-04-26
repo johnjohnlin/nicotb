@@ -32,9 +32,9 @@ always_comb begin
 			o_dval_w = 0;
 		end
 		if (cnt_r == 0) begin
-			o_w = ii;
+			o_w = 7'(ii);
 		end else begin
-			o_w = ii+o;
+			o_w = 7'(ii)+o;
 		end
 	end else begin
 		cnt_w = cnt_r;
@@ -45,9 +45,9 @@ end
 
 always_ff @(posedge clk or negedge rst) begin
 	if (!rst) begin
-		cnt_r <= 0;
-		o_dval <= 0;
-		o <= 0;
+		cnt_r <= '0;
+		o_dval <= 1'b0;
+		o <= '0;
 	end else begin
 		cnt_r <= cnt_w;
 		o_dval <= o_dval_w;

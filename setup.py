@@ -2,9 +2,11 @@
 from distutils.core import setup, Extension
 from numpy import get_include
 from glob import glob
+from sysconfig import get_config_var
 
 ext_args = {
-	'libraries': ['glog'],
+	# The second libraries argument is necessary for python 3.4
+	'libraries': ['glog', "python" + get_config_var('LDVERSION'),],
 	'extra_compile_args': ['--std=c++11'],
 	'include_dirs': [get_include()],
 }
@@ -35,7 +37,7 @@ setup(
 				('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 				('NICOTB_MODULE_NAME', '"bridge_vpi"'),
 			],
-			**ext_args,
+			**ext_args
 		),
 		Extension(
 			'nicotb.bridge_verilator',
@@ -45,7 +47,7 @@ setup(
 				('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 				('NICOTB_MODULE_NAME', '"bridge_verilator"'),
 			],
-			**ext_args,
+			**ext_args
 		),
 	],
 	package_data={'nicotb': ['verilog/*', 'cpp/*.h']},

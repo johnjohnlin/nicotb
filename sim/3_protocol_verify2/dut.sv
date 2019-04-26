@@ -67,7 +67,7 @@ end
 always_ff @(posedge clk or negedge rst) begin
 	if (!rst) begin
 		ordy <= 1'b0;
-		oint <= 1'b0;
+		oint <= '0;
 		iint_r <= '0;
 	end else begin
 		ordy <= ordy_w;
