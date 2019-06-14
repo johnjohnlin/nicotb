@@ -1,13 +1,14 @@
 PY=python3
 NICOTB=$(shell $(PY) -c "import nicotb; print(nicotb.__path__[0])")
 PY_SUFFIX=$(shell $(PY) -c "from distutils.sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))")
+PRELOAD=$(shell $(PY) -c "from distutils.sysconfig import get_config_var; print(get_config_var('LDLIBRARY'))")
 BRIDGE_SO=$(NICOTB)/bridge_vpi$(PY_SUFFIX)
 IRUN=irun
 
 all: dut.sv tb.sv tb.py
-	PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VPI \
+	LD_PRELOAD=$(PRELOAD) PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VPI \
 	TEST=tb TOPMODULE=tb \
-	$(IRUN) +access+rw -loadvpi $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
+	$(IRUN) +ncnowarn+VPISTF +access+rw -loadvpi $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
 
 dump_scoreboard:
 	@echo -e \

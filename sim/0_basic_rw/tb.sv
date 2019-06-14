@@ -28,8 +28,8 @@ logic [10:0] c  [2][4];
 
 always #1 clk = ~clk;
 initial begin
-	$fsdbDumpfile("tb.fsdb");
-	$fsdbDumpvars(0, tb, "+mda");
+	$dumpfile("tb.fsdb");
+	$dumpvars(0, tb);
 	clk = 0;
 	rst = 1;
 	#1 $NicotbInit();
