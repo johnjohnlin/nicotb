@@ -3,38 +3,31 @@ layout: page
 title: "Build Nicotb"
 ---
 # Dependencies
+We run CI on Ubuntu 14.04, and these are the libraries requirements:
 
-* numpy and development package (TODO: version?)
-* Google glog development packages (TODO: version?)
-* Python (>= 3.3 ?)
-* ncverilog (TODO: how about other tools which also support VPI)
-* Linux (TODO: how to port?)
+* Python (>= 3.3)
+* numpy and development package (>= 1.10?)
+* Google glog development packages
+* verilator or ncverilog (TODO: how about other tools which also support VPI)
 
 # Build Nicotb
 
-First you should build the VPI library.
+First you should build the C++ part of Nicotb.
 
 ```bash
-make -C lib/cpp
+python3 setup.py install --user
 ```
 
 The examples are under the `sim/` directory.
-To run the examples, we have prepared a Makefile,
-and you will lanuch the simulation like this.
+To run the examples, we have prepared a script.
 
 ```bash
-cd sim/OOO
-make -f ../Makefile XXX
+cd sim/
+./run_all_verilator.sh
+./run_all_ncverilog.sh
 ```
 
-where XXX is the name of toplevel Python and Verilog files.
 You can find more details in [examples](examples.html).
-
-However, you might face many problems when building the VPI library.
-The Makefile is based on the configuration of my system,
-and I am not familiar with the numpy/Python build flow.
-Moreover, I could not access more platforms now,
-so library/include paths should be modified accordingly.
 
 # Build Nicotb on a very old Linux, without root
 
@@ -138,20 +131,16 @@ This is simpler to compile.
 make install
 ```
 
-## Modify the Makefile
+Finally, you must change `g++` to `g++-8` (or whatever).
 
-The numpy include files are put under a complex path, such as:
-
-```text
-${HOME}/install/lib/python3.6/site-packages/numpy-1.14.2-py3.6-linux-x86_64.egg/numpy/core/include
+```bash
+CC=g++-8 python3 setup.py install --user
 ```
-
-. And you must use `-I path/to/include` flag for `g++`.
-Also, you must change `g++` to `g++-8` (or whatever).
 
 ## Preload libraries
 
-Very commonly, `LD_PRELOAD` must be used to prioritize new libraries.
+** [Updated] This is no longer necessary since we put this in the newer Makefile for ncverilog (sim/Makefile.ius). **
+`LD_PRELOAD` must be used to prioritize new libraries, since EDA tools ship with their own python library, which commonly causes conflicts.
 
 ```bash
 export LD_PRELOAD=${HOME}/install/lib64/libstdc++.so:${HOME}/install/lib/libpython3.6m.so:${HOME}/install/lib/libglog.so
