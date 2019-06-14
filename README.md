@@ -12,8 +12,8 @@ Currently Nicotb supports generic Verilog simulator that support VPI (ncverilog)
 ```
 git clone https://github.com/johnjohnlin/nicotb
 cd nicotb
-python setup.py install --user
-python -c "import nicotb"
+python3 setup.py install --user
+python3 -c "import nicotb"
 ```
 
 Simply <tt>import nicotb</tt> is not that useful, for using nicotb for RTL verification,
