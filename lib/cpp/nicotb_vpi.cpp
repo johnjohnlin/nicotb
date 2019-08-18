@@ -188,9 +188,3 @@ extern "C" void VpiBoot()
 	google::InitGoogleLogging("nicotb");
 	Nicotb::Python::Init();
 }
-
-// TODO: this is not recognized by ncverilog?
-void (*vlog_startup_routines[])() = {
-	VpiBoot,
-	nullptr
-};

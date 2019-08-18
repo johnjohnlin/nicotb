@@ -32,11 +32,11 @@ initial begin
 	$dumpvars(0, tb);
 	clk = 0;
 	rst = 1;
-	#1 $NicotbInit();
+	#1 `NicotbInit
 	#10 rst = 0;
 	#10 rst = 1;
 	#100
-	$NicotbFinal();
+	`NicotbFinal
 	$finish;
 end
 

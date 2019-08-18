@@ -1,0 +1,27 @@
+PY?=python3
+NICOTB=$(shell $(PY) -c "import nicotb; print(nicotb.__path__[0])")
+PY_SUFFIX=$(shell $(PY) -c "from distutils.sysconfig import get_config_var as G; print(G('EXT_SUFFIX'))")
+PRELOAD=$(shell $(PY) -c "import os; from distutils.sysconfig import get_config_var as G; print(os.path.join(G('LIBDIR'), G('LDLIBRARY')))")
+BRIDGE_SO=$(NICOTB)/bridge_vpi$(PY_SUFFIX)
+VCS?=vcs
+
+all: dut.sv tb.sv tb.py
+	$(VCS) -debug_acc+dmptf -debug_region+cell+encrypt -sverilog -load $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
+	LD_PRELOAD=$(PRELOAD) PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VPI \
+	TEST=tb TOPMODULE=tb ./simv
+
+dump_scoreboard:
+	@echo -e \
+	".open scoreboard.db\n"\
+	".header on\n"\
+	".mode column\n"\
+	".print ===============\n"\
+	".print All Scoreboards\n"\
+	".print ===============\n"\
+	"select * from Scoreboard;\n"\
+	".print\n"\
+	".print =========\n"\
+	".print All Tests\n"\
+	".print =========\n"\
+	"select * from Tests;\n"\
+	 | sqlite3

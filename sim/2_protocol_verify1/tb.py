@@ -28,8 +28,11 @@ def main():
 	test1 = scb.GetTest("test1", squeeze=True)
 	st = Stacker(N, callbacks=[test1.Get, lambda x: print("Print with name: {}".format(x.o))])
 	bg = BusGetter(callbacks=[st.Get])
+	print("4!")
 	yield rs_ev
+	print("5!")
 	yield ck_ev
+	print("6!")
 	master = OneWire.Master(src_val, src_dat, ck_ev, callbacks=[print])
 	slave = OneWire.Slave(dst_val, dst_dat, ck_ev, callbacks=[print, bg.Get])
 	values = master.values
@@ -39,6 +42,7 @@ def main():
 	# test1.Expect((golden+1,)) # must fail
 	ITER = not getenv("ITER") is None
 	print("Iteration mode is set to {}".format(ITER))
+	print("4!")
 	if ITER:
 		def it():
 			for i in arr:
@@ -46,15 +50,19 @@ def main():
 				print(i)
 				np.copyto(values.i, i)
 				yield values
+		print("4!")
 		yield from master.SendIter(it())
 	else:
 		for i in arr:
 			np.copyto(values.i, i)
 			yield from master.Send(values)
+	print("1!")
 	for i in range(10):
 		yield ck_ev
+	print("2!")
 	assert st.is_clean
 	FinishSim()
+	print("3!")
 
 src_val, dst_val, src_dat, dst_dat = CreateBuses([
 	("i_dval",),
