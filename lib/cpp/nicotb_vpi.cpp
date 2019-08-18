@@ -17,11 +17,14 @@
 #include "vpi/vpi_user.h"
 #include "nicotb_python.h"
 #include <fstream>
+#include <functional>
+#include <numeric>
 
 namespace Nicotb {
 
 using namespace std;
 static vector<vector<vpiHandle>> registered_handles;
+static bool VCS_FIX;
 
 namespace Vpi {
 
@@ -113,25 +116,49 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 	} else {
 		LOG(FATAL) << hier << " not founded.";
 	}
-	for (int l: d) {
-		dst.clear();
-		for (auto &&h: src) {
-			for (int i = 0; i < l; ++i) {
-				dst.push_back(vpi_handle_by_index(h, i));
-				if (dst.back()) {
-					LOG(INFO) << "Index " << i << " of " << h << " found: " << dst.back();
-				} else {
-					LOG(FATAL) << "Index " << i << " of " << h << " not found.";
+	auto AppendHandle = [](vector<vpiHandle> &v, const int idx, vpiHandle h) {
+		v.push_back(h);
+		if (v.back()) {
+			LOG(INFO) << "Index " << idx << " of " << h << " found: " << v.back();
+		} else {
+			LOG(FATAL) << "Index " << idx << " of " << h << " not found.";
+		}
+	};
+	if (VCS_FIX) {
+		// VCS only supports flatten MDA
+		if (not d.empty()) {
+			auto mem_it = vpi_iterate(vpiReg, src.back());
+			CHECK(mem_it) << "Cannot iterate register array " << src.back();
+			vpiHandle h;
+			int i = 0;
+			while ((h = vpi_scan(mem_it))) {
+				AppendHandle(dst, i, h);
+				++i;
+			}
+			const int expected_handle_num = std::accumulate(d.begin(), d.end(), 1, std::multiplies<int>());
+			CHECK_EQ(dst.size(), expected_handle_num) << "In VCS, the sizes of in C++ and Verilog must equal.";
+			swap(src, dst);
+		}
+	} else {
+		// This works fine for IUS
+		for (int l: d) {
+			dst.clear();
+			for (auto &&h: src) {
+				for (int i = 0; i < l; ++i) {
+					AppendHandle(dst, i, vpi_handle_by_index(h, i));
 				}
 			}
+			swap(src, dst);
 		}
-		swap(src, dst);
 	}
 	handles.insert(handles.end(), src.begin(), src.end());
 }
 
 static PLI_INT32 Init(PLI_BYTE8 *args)
 {
+	VCS_FIX = EnvSet("NICOTB_VCS");
+	LOG_IF(INFO, VCS_FIX) << "Simulate in VCS VPI";
+
 	vpiHandle systfref;
 	s_vpi_value argval;
 	systfref = vpi_handle(vpiSysTfCall, nullptr);
@@ -188,9 +215,3 @@ extern "C" void VpiBoot()
 	google::InitGoogleLogging("nicotb");
 	Nicotb::Python::Init();
 }
-
-// TODO: this is not recognized by ncverilog?
-void (*vlog_startup_routines[])() = {
-	VpiBoot,
-	nullptr
-};

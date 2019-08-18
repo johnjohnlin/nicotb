@@ -42,8 +42,7 @@ def main():
 	if ITER:
 		def it():
 			for i in arr:
-				print(arr)
-				print(i)
+				print(arr, i)
 				np.copyto(values.i, i)
 				yield values
 		yield from master.SendIter(it())

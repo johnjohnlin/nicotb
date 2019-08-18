@@ -6,5 +6,6 @@
 !*.sv
 !*.h
 !*.md
-!Makefile
+!*.sh
+!Makefile*
 !.gitignore
