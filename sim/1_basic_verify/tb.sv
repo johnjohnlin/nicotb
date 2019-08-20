@@ -34,7 +34,7 @@ initial begin
 	clk = 0;
 	rst = 1;
 	character = 0;
-	#1 $NicotbInit();
+	#1 `NicotbInit
 	#10 rst = 0;
 	#10 rst = 1;
 	#5
@@ -43,7 +43,7 @@ initial begin
 		character <= characters[8*(LEN-i)-1 -: 8];
 	end
 	#100
-	$NicotbFinal();
+	`NicotbFinal
 	$finish;
 end
 

@@ -30,11 +30,11 @@ initial begin
 	$fsdbDumpvars(0, tb, "+mda");
 	clk = 0;
 	rst = 1;
-	#1 $NicotbInit();
+	#1 `NicotbInit
 	#10 rst = 0;
 	#10 rst = 1;
 	#1000
-	$NicotbFinal;
+	`NicotbFinal
 	$finish;
 end
 
