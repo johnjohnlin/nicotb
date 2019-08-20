@@ -14,7 +14,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
-module sm_dut(input clk, input rst, input i_dval, input [3:0] i [2], output logic o_dval, output logic [6:0] o);
+module sm_dut(input clk, input rst, input i_dval, input logic [3:0] i [2], output logic o_dval, output logic [6:0] o);
 
 logic [1:0] cnt_r, cnt_w;
 logic o_dval_w;
