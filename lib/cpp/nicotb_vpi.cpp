@@ -17,8 +17,6 @@
 #include "vpi/vpi_user.h"
 #include "nicotb_python.h"
 #include <fstream>
-#include <functional>
-#include <numeric>
 
 namespace Nicotb {
 
@@ -124,19 +122,26 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 			LOG(FATAL) << "Index " << idx << " of " << h << " not found.";
 		}
 	};
+
 	if (VCS_FIX) {
-		// VCS only supports flatten MDA
+		// TODO: check whether this works for ncverilog VPI
 		if (not d.empty()) {
-			auto mem_it = vpi_iterate(vpiReg, src.back());
-			CHECK(mem_it) << "Cannot iterate register array " << src.back();
-			vpiHandle h;
-			int i = 0;
-			while ((h = vpi_scan(mem_it))) {
-				AppendHandle(dst, i, h);
-				++i;
+			vector<int> v_dims(d.size(), 0);
+			bool backtracking = true;
+			for (int i = 0; backtracking; ++i) {
+				AppendHandle(dst, i, vpi_handle_by_multi_index(src.back(), int(d.size()), v_dims.data()));
+				auto it = v_dims.begin();
+				for (int l: d) {
+					if (*it == l-1) {
+						*it = 0;
+					} else {
+						*it += 1;
+						break;
+					}
+					++it;
+				}
+				backtracking = it != v_dims.end();
 			}
-			const int expected_handle_num = std::accumulate(d.begin(), d.end(), 1, std::multiplies<int>());
-			CHECK_EQ(dst.size(), expected_handle_num) << "In VCS, the sizes of in C++ and Verilog must equal.";
 			swap(src, dst);
 		}
 	} else {
