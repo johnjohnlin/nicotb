@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+// Copyright (C) 2017-2020, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -107,10 +107,10 @@ static inline vpiHandle HandleByName(char *hier, vpiHandle h)
 static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char *hier)
 {
 	auto hier_cs = ToCharUqPtr(hier);
-	vector<vpiHandle> src, dst;
-	src.push_back(vpi_handle_by_name(hier, nullptr));
-	if (src.back()) {
-		LOG(INFO) << hier << " founded: " << src.back();
+	vector<vpiHandle> append_handles, append_handles_tmp;
+	append_handles.push_back(vpi_handle_by_name(hier, nullptr));
+	if (append_handles.back()) {
+		LOG(INFO) << hier << " founded: " << append_handles.back();
 	} else {
 		LOG(FATAL) << hier << " not founded.";
 	}
@@ -123,40 +123,53 @@ static void ExtractSignal(vector<vpiHandle> &handles, const vector<int> &d, char
 		}
 	};
 
+	auto AppendHandlesND = [&]() {
+		if (d.empty()) {
+			return;
+		}
+		vector<int> indices(d.size(), 0);
+		DCHECK_EQ(append_handles.size(), 1);
+		vpiHandle root_handle = append_handles.front();
+		for (int i = 0;; ++i) {
+			AppendHandle(append_handles_tmp, i, vpi_handle_by_multi_index(root_handle, int(d.size()), indices.data()));
+			auto it_idx = indices.rbegin();
+			auto it_dim = d.rbegin();
+			while (true) {
+				*it_idx += 1;
+				if (*it_idx == *it_dim) {
+					*it_idx = 0;
+				} else {
+					break;
+				}
+				++it_idx;
+				++it_dim;
+				if (it_dim == d.rend()) {
+					DCHECK(it_idx == indices.rend()) << "iterator must end at the same time";
+					swap(append_handles, append_handles_tmp);
+					return;
+				}
+			}
+		}
+		DCHECK(false);
+	};
+
 	if (VCS_FIX) {
 		// TODO: check whether this works for ncverilog VPI
-		if (not d.empty()) {
-			vector<int> v_dims(d.size(), 0);
-			bool backtracking = true;
-			for (int i = 0; backtracking; ++i) {
-				AppendHandle(dst, i, vpi_handle_by_multi_index(src.back(), int(d.size()), v_dims.data()));
-				auto it = v_dims.begin();
-				for (int l: d) {
-					if (*it == l-1) {
-						*it = 0;
-					} else {
-						*it += 1;
-						break;
-					}
-					++it;
-				}
-				backtracking = it != v_dims.end();
-			}
-			swap(src, dst);
-		}
+		AppendHandlesND();
 	} else {
 		// This works fine for IUS
+		vector<vpiHandle> appdne_handles_tmp;
 		for (int l: d) {
-			dst.clear();
-			for (auto &&h: src) {
+			append_handles_tmp.clear();
+			for (auto &&h: append_handles) {
 				for (int i = 0; i < l; ++i) {
-					AppendHandle(dst, i, vpi_handle_by_index(h, i));
+					AppendHandle(append_handles_tmp, i, vpi_handle_by_index(h, i));
 				}
 			}
-			swap(src, dst);
+			swap(append_handles, append_handles_tmp);
 		}
 	}
-	handles.insert(handles.end(), src.begin(), src.end());
+	handles.insert(handles.end(), append_handles.begin(), append_handles.end());
 }
 
 static PLI_INT32 Init(PLI_BYTE8 *args)
