@@ -6,9 +6,9 @@ BRIDGE_SO=$(NICOTB)/bridge_vpi$(PY_SUFFIX)
 VCS?=vcs
 
 all: dut.sv tb.sv tb.py
-	$(VCS) +vpi -debug_acc+dmptf+all -debug_region+cell+encrypt -sverilog -load $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
+	$(VCS) -q -override_timescale=1ns/1ns +vpi -debug_acc+dmptf+all -debug_region+cell+encrypt -sverilog -load $(BRIDGE_SO):VpiBoot $(NICOTB)/verilog/Utils.sv tb.sv
 	LD_PRELOAD=$(PRELOAD) PYTHONPATH=`pwd` GLOG_logtostderr=1 GLOG_minloglevel=0 NICOTB_MODE=VPI NICOTB_VCS=1 \
-	TEST=tb TOPMODULE=tb ./simv
+	TEST=tb TOPMODULE=tb ./simv -q
 
 dump_scoreboard:
 	@echo -e \
