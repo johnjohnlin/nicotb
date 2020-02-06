@@ -1,4 +1,6 @@
-// Copyright (C) 2017,2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+`ifndef __NICOTB_UTIL_SV__
+`define __NICOTB_UTIL_SV__
+// Copyright (C) 2017,2019,2020, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
 
 // This file is part of Nicotb.
 
@@ -15,44 +17,54 @@
 // You should have received a copy of the GNU General Public License
 // along with Nicotb.  If not, see <http://www.gnu.org/licenses/>.
 
+package Nicotb;
+	task Abort(input logic [256:0] istr);
+		$display({60{"^"}});
+		$display(">>> Errors occur in Nicotb::%0s", istr);
+		$display({60{"="}});
+		$finish(2);
+	endtask
+endpackage
+
 `define Pos(name, sig) \
 	integer name = -1; \
 	always @(posedge sig) \
-		if($NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #0 if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if($NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #0 if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 `define Neg(name, sig) \
 	integer name = -1; \
 	always @(negedge sig) \
-		if($NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #0 if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if($NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #0 if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 `define PosIf(name, sig, cond) \
 	integer name = -1; \
 	always @(posedge sig) \
-		if ((cond) && $NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #0 if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if ((cond) && $NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #0 if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 `define NegIf(name, sig, cond) \
 	integer name = -1; \
 	always @(negedge sig) \
-		if ((cond) && $NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #0 if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if ((cond) && $NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #0 if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 // useful for gate level
 `define PosIfDelayed(name, sig, cond, t) \
 	integer name = -1; \
 	always @(posedge sig) \
-		if ((cond) && $NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #(t) if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if ((cond) && $NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #(t) if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 `define NegIfDelayed(name, sig, cond, t) \
 	integer name = -1; \
 	always @(negedge sig) \
-		if ((cond) && $NicotbTriggerEvent(name)) $error("NicotbTriggerEvent"); \
-		else #(t) if ($NicotbUpdateWrite()) $error("NicotbUpdateWrite");
+		if ((cond) && $NicotbTriggerEvent(name)) Nicotb::Abort("TriggerEvent"); \
+		else #(t) if ($NicotbUpdateWrite()) Nicotb::Abort("UpdateWrite");
 `define WithFinish \
 	logic nicotb_fin_wire; \
 	initial begin \
 		nicotb_fin_wire = 0; \
 		@(posedge nicotb_fin_wire) \
-		if ($NicotbFinal()) $error("NicotbFinal"); \
+		if ($NicotbFinal()) Nicotb::Abort("Final"); \
 		$finish; \
 	end
-`define NicotbInit if ($NicotbInit()) $error("NicotbInit");
-`define NicotbFinal if ($NicotbFinal()) $error("NicotbFinal");
+`define NicotbInit if ($NicotbInit()) Nicotb::Abort("Init");
+`define NicotbFinal if ($NicotbFinal()) Nicotb::Abort("Final");
+`endif
