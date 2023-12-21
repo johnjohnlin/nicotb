@@ -72,12 +72,12 @@ def RegisterCoroutines(coro: list):
 
 def MainLoop():
 	while len(event_queue) != 0:
-		event_idx, all_ev = event_queue.pop()
+		event_idx, all_ev = event_queue.popleft()
 		if all_ev:
 			proc = waiting_coro[event_idx]
 			waiting_coro[event_idx] = list()
 		else:
-			proc = [waiting_coro.pop()]
+			proc = [waiting_coro.pop(0)]
 		RegisterCoroutines(proc)
 
 def FinishSim():
