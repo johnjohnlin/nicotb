@@ -1,4 +1,6 @@
 # Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Contributors
+# 2023, En Ho Shen, enhoshen@gmail.com
 
 # This file is part of Nicotb.
 
