@@ -1,4 +1,6 @@
 # Copyright (C) 2017-2019, Yu Sheng Lin, johnjohnlys@media.ee.ntu.edu.tw
+# Contributors
+# 2023, En Ho Shen, enhoshen@gmail.com
 
 # This file is part of Nicotb.
 
@@ -72,12 +74,12 @@ def RegisterCoroutines(coro: list):
 
 def MainLoop():
 	while len(event_queue) != 0:
-		event_idx, all_ev = event_queue.pop()
+		event_idx, all_ev = event_queue.popleft()
 		if all_ev:
 			proc = waiting_coro[event_idx]
 			waiting_coro[event_idx] = list()
 		else:
-			proc = [waiting_coro.pop()]
+			proc = [waiting_coro.pop(0)]
 		RegisterCoroutines(proc)
 
 def FinishSim():
